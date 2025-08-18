@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Dummy authentication - in real app, this would validate with backend
-    if (email === 'doctor@careconnect.com' && password === 'password123') {
+    if (email === 'test@email.com' && password === 'test1234') {
       const userData = {
         id: 1,
         name: 'Dr. Jennifer Martinez',

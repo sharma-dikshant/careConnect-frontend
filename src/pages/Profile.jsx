@@ -80,10 +80,6 @@ const Profile = () => {
   return (
     <DashboardLayout>
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>
-          Profile
-        </Typography>
-
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
             {success}

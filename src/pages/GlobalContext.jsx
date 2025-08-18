@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -22,18 +22,18 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Divider
-} from '@mui/material';
+  Divider,
+} from "@mui/material";
 import {
   Upload as UploadIcon,
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
   Folder as FolderIcon,
-  Description as DescriptionIcon
-} from '@mui/icons-material';
-import DashboardLayout from '../components/DashboardLayout';
-import { dummyGlobalContext } from '../data/dummyData';
+  Description as DescriptionIcon,
+} from "@mui/icons-material";
+import DashboardLayout from "../components/DashboardLayout";
+import { dummyGlobalContext } from "../data/dummyData";
 
 const GlobalContext = () => {
   const [contextFiles, setContextFiles] = useState([]);
@@ -41,15 +41,15 @@ const GlobalContext = () => {
   const [editDialog, setEditDialog] = useState(false);
   const [editingFile, setEditingFile] = useState(null);
   const [uploadForm, setUploadForm] = useState({
-    name: '',
-    description: '',
-    file: null
+    name: "",
+    description: "",
+    file: null,
   });
   const [editForm, setEditForm] = useState({
-    name: '',
-    description: ''
+    name: "",
+    description: "",
   });
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     setContextFiles(dummyGlobalContext);
@@ -60,67 +60,69 @@ const GlobalContext = () => {
       const newFile = {
         id: Date.now(),
         name: uploadForm.name,
-        type: 'PDF',
-        size: '2.1 MB',
-        uploadDate: new Date().toISOString().split('T')[0],
-        description: uploadForm.description
+        type: "PDF",
+        size: "2.1 MB",
+        uploadDate: new Date().toISOString().split("T")[0],
+        description: uploadForm.description,
       };
-      setContextFiles(prev => [...prev, newFile]);
-      setSuccess('File uploaded successfully!');
-      setTimeout(() => setSuccess(''), 3000);
+      setContextFiles((prev) => [...prev, newFile]);
+      setSuccess("File uploaded successfully!");
+      setTimeout(() => setSuccess(""), 3000);
       setUploadDialog(false);
-      setUploadForm({ name: '', description: '', file: null });
+      setUploadForm({ name: "", description: "", file: null });
     }
   };
 
   const handleEditSubmit = () => {
-    setContextFiles(prev => prev.map(f => 
-      f.id === editingFile.id ? { ...f, ...editForm } : f
-    ));
-    setSuccess('File updated successfully!');
-    setTimeout(() => setSuccess(''), 3000);
+    setContextFiles((prev) =>
+      prev.map((f) => (f.id === editingFile.id ? { ...f, ...editForm } : f))
+    );
+    setSuccess("File updated successfully!");
+    setTimeout(() => setSuccess(""), 3000);
     setEditDialog(false);
     setEditingFile(null);
   };
 
   const handleDeleteFile = (fileId) => {
-    setContextFiles(prev => prev.filter(f => f.id !== fileId));
-    setSuccess('File deleted successfully!');
-    setTimeout(() => setSuccess(''), 3000);
+    setContextFiles((prev) => prev.filter((f) => f.id !== fileId));
+    setSuccess("File deleted successfully!");
+    setTimeout(() => setSuccess(""), 3000);
   };
 
   const handleOpenEditDialog = (file) => {
     setEditingFile(file);
     setEditForm({
       name: file.name,
-      description: file.description
+      description: file.description,
     });
     setEditDialog(true);
   };
 
   const getTypeColor = (type) => {
     switch (type) {
-      case 'PDF': return 'error';
-      case 'CSV': return 'success';
-      default: return 'default';
+      case "PDF":
+        return "error";
+      case "CSV":
+        return "success";
+      default:
+        return "default";
     }
   };
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'PDF': return <DescriptionIcon />;
-      case 'CSV': return <DescriptionIcon />;
-      default: return <FolderIcon />;
+      case "PDF":
+        return <DescriptionIcon />;
+      case "CSV":
+        return <DescriptionIcon />;
+      default:
+        return <FolderIcon />;
     }
   };
 
   return (
     <DashboardLayout>
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>
-          Global Context Management
-        </Typography>
-
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
             {success}
@@ -128,12 +130,17 @@ const GlobalContext = () => {
         )}
 
         {/* Overview Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={4} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <FolderIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              <CardContent sx={{ textAlign: "center" }}>
+                <FolderIcon
+                  sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
+                />
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: "bold", color: "primary.main" }}
+                >
                   {contextFiles.length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -142,13 +149,18 @@ const GlobalContext = () => {
               </CardContent>
             </Card>
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <DescriptionIcon sx={{ fontSize: 40, color: 'error.main', mb: 1 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-                  {contextFiles.filter(f => f.type === 'PDF').length}
+              <CardContent sx={{ textAlign: "center" }}>
+                <DescriptionIcon
+                  sx={{ fontSize: 40, color: "error.main", mb: 1 }}
+                />
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: "bold", color: "error.main" }}
+                >
+                  {contextFiles.filter((f) => f.type === "PDF").length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   PDF Files
@@ -156,30 +168,21 @@ const GlobalContext = () => {
               </CardContent>
             </Card>
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3}>
             <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <DescriptionIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                  {contextFiles.filter(f => f.type === 'CSV').length}
+              <CardContent sx={{ textAlign: "center" }}>
+                <DescriptionIcon
+                  sx={{ fontSize: 40, color: "success.main", mb: 1 }}
+                />
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: "bold", color: "success.main" }}
+                >
+                  {contextFiles.filter((f) => f.type === "CSV").length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   CSV Files
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <UploadIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
-                  Recent
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Latest Uploads
                 </Typography>
               </CardContent>
             </Card>
@@ -189,8 +192,15 @@ const GlobalContext = () => {
         {/* File Management Section */}
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ color: 'primary.main' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+              }}
+            >
+              <Typography variant="h5" sx={{ color: "primary.main" }}>
                 Global Context Files
               </Typography>
               <Button
@@ -203,7 +213,8 @@ const GlobalContext = () => {
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              These files are shared across all patients and provide general medical guidelines, protocols, and reference materials.
+              These files are shared across all patients and provide general
+              medical guidelines, protocols, and reference materials.
             </Typography>
 
             <TableContainer component={Paper}>
@@ -222,14 +233,14 @@ const GlobalContext = () => {
                   {contextFiles.map((file) => (
                     <TableRow key={file.id}>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           {getTypeIcon(file.type)}
                           <Typography sx={{ ml: 1 }}>{file.name}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={file.type} 
+                        <Chip
+                          label={file.type}
                           color={getTypeColor(file.type)}
                           size="small"
                         />
@@ -248,8 +259,8 @@ const GlobalContext = () => {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             color="secondary"
                             onClick={() => handleOpenEditDialog(file)}
                           >
@@ -257,8 +268,8 @@ const GlobalContext = () => {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             color="error"
                             onClick={() => handleDeleteFile(file.id)}
                           >
@@ -275,20 +286,28 @@ const GlobalContext = () => {
         </Card>
 
         {/* Upload Dialog */}
-        <Dialog open={uploadDialog} onClose={() => setUploadDialog(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={uploadDialog}
+          onClose={() => setUploadDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>Upload Global Context File</DialogTitle>
           <DialogContent>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Upload files that will be available to all patients (PDF, CSV formats recommended)
+              Upload files that will be available to all patients (PDF, CSV
+              formats recommended)
             </Typography>
-            
+
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="File Name"
                   value={uploadForm.name}
-                  onChange={(e) => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setUploadForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   required
                   helperText="Enter a descriptive name for the file"
                 />
@@ -300,7 +319,12 @@ const GlobalContext = () => {
                   multiline
                   rows={3}
                   value={uploadForm.description}
-                  onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setUploadForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   required
                   helperText="Describe the content and purpose of this file"
                 />
@@ -318,7 +342,12 @@ const GlobalContext = () => {
                     type="file"
                     hidden
                     accept=".pdf,.csv"
-                    onChange={(e) => setUploadForm(prev => ({ ...prev, file: e.target.files[0] }))}
+                    onChange={(e) =>
+                      setUploadForm((prev) => ({
+                        ...prev,
+                        file: e.target.files[0],
+                      }))
+                    }
                   />
                 </Button>
               </Grid>
@@ -326,12 +355,19 @@ const GlobalContext = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setUploadDialog(false)}>Cancel</Button>
-            <Button onClick={handleUploadSubmit} variant="contained">Upload</Button>
+            <Button onClick={handleUploadSubmit} variant="contained">
+              Upload
+            </Button>
           </DialogActions>
         </Dialog>
 
         {/* Edit Dialog */}
-        <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={editDialog}
+          onClose={() => setEditDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>Edit File Information</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -340,7 +376,9 @@ const GlobalContext = () => {
                   fullWidth
                   label="File Name"
                   value={editForm.name}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   required
                 />
               </Grid>
@@ -351,7 +389,12 @@ const GlobalContext = () => {
                   multiline
                   rows={3}
                   value={editForm.description}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   required
                 />
               </Grid>
@@ -359,7 +402,9 @@ const GlobalContext = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialog(false)}>Cancel</Button>
-            <Button onClick={handleEditSubmit} variant="contained">Update</Button>
+            <Button onClick={handleEditSubmit} variant="contained">
+              Update
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
@@ -367,4 +412,4 @@ const GlobalContext = () => {
   );
 };
 
-export default GlobalContext; 
+export default GlobalContext;

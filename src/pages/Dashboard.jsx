@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -26,8 +26,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Alert
-} from '@mui/material';
+  Alert,
+} from "@mui/material";
 import {
   Add as AddIcon,
   Visibility as ViewIcon,
@@ -36,24 +36,24 @@ import {
   People as PeopleIcon,
   Notifications as NotificationsIcon,
   Folder as FolderIcon,
-  TrendingUp as TrendingUpIcon
-} from '@mui/icons-material';
-import DashboardLayout from '../components/DashboardLayout';
-import { dummyPatients } from '../data/dummyData';
+  TrendingUp as TrendingUpIcon,
+} from "@mui/icons-material";
+import DashboardLayout from "../components/DashboardLayout";
+import { dummyPatients } from "../data/dummyData";
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    contact: '',
-    email: '',
-    diagnosis: '',
-    status: 'Active'
+    name: "",
+    age: "",
+    contact: "",
+    email: "",
+    diagnosis: "",
+    status: "Active",
   });
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,12 +67,12 @@ const Dashboard = () => {
     } else {
       setEditingPatient(null);
       setFormData({
-        name: '',
-        age: '',
-        contact: '',
-        email: '',
-        diagnosis: '',
-        status: 'Active'
+        name: "",
+        age: "",
+        contact: "",
+        email: "",
+        diagnosis: "",
+        status: "Active",
       });
     }
     setOpenDialog(true);
@@ -82,50 +82,52 @@ const Dashboard = () => {
     setOpenDialog(false);
     setEditingPatient(null);
     setFormData({
-      name: '',
-      age: '',
-      contact: '',
-      email: '',
-      diagnosis: '',
-      status: 'Active'
+      name: "",
+      age: "",
+      contact: "",
+      email: "",
+      diagnosis: "",
+      status: "Active",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = () => {
     if (editingPatient) {
       // Edit existing patient
-      setPatients(prev => prev.map(p => 
-        p.id === editingPatient.id ? { ...p, ...formData } : p
-      ));
-      setSuccess('Patient updated successfully!');
+      setPatients((prev) =>
+        prev.map((p) =>
+          p.id === editingPatient.id ? { ...p, ...formData } : p
+        )
+      );
+      setSuccess("Patient updated successfully!");
     } else {
       // Add new patient
       const newPatient = {
         id: Date.now(),
         ...formData,
-        medicalId: `MED${String(patients.length + 1).padStart(3, '0')}`,
-        lastVisit: new Date().toISOString().split('T')[0]
+        medicalId: `MED${String(patients.length + 1).padStart(3, "0")}`,
+        lastVisit: new Date().toISOString().split("T")[0],
       };
-      setPatients(prev => [...prev, newPatient]);
-      setSuccess('Patient added successfully!');
+      setPatients((prev) => [...prev, newPatient]);
+      setSuccess("Patient added successfully!");
     }
-    
-    setTimeout(() => setSuccess(''), 3000);
+
+    setTimeout(() => setSuccess(""), 3000);
     handleCloseDialog();
   };
 
   const handleDeletePatient = (patientId) => {
-    setPatients(prev => prev.filter(p => p.id !== patientId));
-    setSuccess('Patient removed successfully!');
-    setTimeout(() => setSuccess(''), 3000);
+    setPatients((prev) => prev.filter((p) => p.id !== patientId));
+    setSuccess("Patient removed successfully!");
+    setTimeout(() => setSuccess(""), 3000);
   };
 
   const handleViewPatient = (patientId) => {
@@ -134,35 +136,35 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: 'Total Patients',
+      title: "Total Patients",
       value: patients.length,
-      icon: <PeopleIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
-      color: 'primary.main'
+      icon: <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />,
+      color: "primary.main",
     },
     {
-      title: 'Active Cases',
-      value: patients.filter(p => p.status === 'Active').length,
-      icon: <TrendingUpIcon sx={{ fontSize: 40, color: 'secondary.main' }} />,
-      color: 'secondary.main'
+      title: "Active Cases",
+      value: patients.filter((p) => p.status === "Active").length,
+      icon: <TrendingUpIcon sx={{ fontSize: 40, color: "secondary.main" }} />,
+      color: "secondary.main",
     },
     {
-      title: 'Notifications',
+      title: "Notifications",
       value: 4,
-      icon: <NotificationsIcon sx={{ fontSize: 40, color: 'warning.main' }} />,
-      color: 'warning.main'
+      icon: <NotificationsIcon sx={{ fontSize: 40, color: "warning.main" }} />,
+      color: "warning.main",
     },
     {
-      title: 'Context Files',
+      title: "Context Files",
       value: 8,
-      icon: <FolderIcon sx={{ fontSize: 40, color: 'info.main' }} />,
-      color: 'info.main'
-    }
+      icon: <FolderIcon sx={{ fontSize: 40, color: "info.main" }} />,
+      color: "info.main",
+    },
   ];
 
   return (
     <DashboardLayout>
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>
+        <Typography variant="h4" sx={{ mb: 3, color: "primary.main" }}>
           Dashboard
         </Typography>
 
@@ -176,10 +178,13 @@ const Dashboard = () => {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {stats.map((stat, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent sx={{ textAlign: 'center' }}>
+              <Card sx={{ height: "100%" }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   {stat.icon}
-                  <Typography variant="h4" sx={{ mt: 1, fontWeight: 'bold', color: stat.color }}>
+                  <Typography
+                    variant="h4"
+                    sx={{ mt: 1, fontWeight: "bold", color: stat.color }}
+                  >
                     {stat.value}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -191,78 +196,12 @@ const Dashboard = () => {
           ))}
         </Grid>
 
-        {/* Quick Actions */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h5" sx={{ color: 'primary.main' }}>
-              Quick Actions
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDialog()}
-            >
-              Add Patient
-            </Button>
-          </Box>
-          
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <PeopleIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                  <Typography variant="h6">Manage Patients</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    View and edit patient information
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <FolderIcon sx={{ fontSize: 40, color: 'secondary.main', mb: 1 }} />
-                  <Typography variant="h6">Global Context</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Upload and manage shared files
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <NotificationsIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
-                  <Typography variant="h6">Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Check alerts and updates
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <TrendingUpIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                  <Typography variant="h6">Reports</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    View patient statistics
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-
         {/* Recent Patients Table */}
         <Box>
-          <Typography variant="h5" sx={{ color: 'primary.main', mb: 2 }}>
+          <Typography variant="h5" sx={{ color: "primary.main", mb: 2 }}>
             Recent Patients
           </Typography>
-          
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -284,17 +223,19 @@ const Dashboard = () => {
                     <TableCell>{patient.medicalId}</TableCell>
                     <TableCell>{patient.diagnosis}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={patient.status} 
-                        color={patient.status === 'Active' ? 'success' : 'default'}
+                      <Chip
+                        label={patient.status}
+                        color={
+                          patient.status === "Active" ? "success" : "default"
+                        }
                         size="small"
                       />
                     </TableCell>
                     <TableCell>{patient.lastVisit}</TableCell>
                     <TableCell>
                       <Tooltip title="View Details">
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           onClick={() => handleViewPatient(patient.id)}
                           color="primary"
                         >
@@ -302,8 +243,8 @@ const Dashboard = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Edit">
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           onClick={() => handleOpenDialog(patient)}
                           color="secondary"
                         >
@@ -311,8 +252,8 @@ const Dashboard = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           onClick={() => handleDeletePatient(patient.id)}
                           color="error"
                         >
@@ -329,9 +270,14 @@ const Dashboard = () => {
       </Box>
 
       {/* Add/Edit Patient Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
-          {editingPatient ? 'Edit Patient' : 'Add New Patient'}
+          {editingPatient ? "Edit Patient" : "Add New Patient"}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -407,7 +353,7 @@ const Dashboard = () => {
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editingPatient ? 'Update' : 'Add'}
+            {editingPatient ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -415,4 +361,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;
