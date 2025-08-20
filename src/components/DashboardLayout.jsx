@@ -194,7 +194,7 @@ const DashboardLayout = ({ children }) => {
                 <Avatar
                   sx={{ width: 32, height: 32, bgcolor: "secondary.main" }}
                 >
-                  {user?.name?.charAt(0) || "D"}
+                  {user?.name?.charAt(0) || "J"}
                 </Avatar>
               </IconButton>
             </Tooltip>

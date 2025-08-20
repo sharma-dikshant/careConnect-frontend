@@ -10,6 +10,7 @@ import PatientDetails from './pages/PatientDetails';
 import GlobalContext from './pages/GlobalContext';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import Hardware from './components/Hardware';
 
 // Medical-themed color palette
 const theme = createTheme({
@@ -83,6 +84,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/hardware" element={<Hardware />} />
       <Route path="/" element={
         <ProtectedRoute>
           <Dashboard />

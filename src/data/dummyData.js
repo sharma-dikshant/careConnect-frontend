@@ -93,8 +93,8 @@ export const dummyNotifications = [
 
 export const dummyProfile = {
   id: 1,
-  name: "Dr. Jennifer Martinez",
-  email: "dr.martinez@careconnect.com",
+  name: "Jennifer Martinez",
+  email: "martinez@careconnect.com",
   specialization: "Internal Medicine",
   phone: "+1-555-0100",
   license: "MD12345",
