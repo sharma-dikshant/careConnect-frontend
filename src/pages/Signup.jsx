@@ -13,6 +13,7 @@ import {
   Grid,
 } from "@mui/material";
 import { PersonAddOutlined } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +25,9 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,17 +79,29 @@ const Signup = () => {
     }
 
     setLoading(true);
+    setError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const result = await signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
 
-    setSuccess(true);
-    setLoading(false);
-
-    // Redirect to login after successful signup
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+      if (result.success) {
+        setSuccess(true);
+        // Redirect to login after successful signup
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError("An error occurred during signup");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -137,6 +152,12 @@ const Signup = () => {
         {success && (
           <Alert severity="success" sx={{ width: "100%", mb: 2 }}>
             Account created successfully! Redirecting to login...
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
+            {error}
           </Alert>
         )}
 

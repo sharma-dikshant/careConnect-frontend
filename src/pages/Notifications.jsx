@@ -19,6 +19,7 @@ import {
   ListItemText,
   ListItemIcon,
   Badge,
+  CircularProgress,
 } from "@mui/material";
 import {
   ExpandMore as ExpandMoreIcon,
@@ -32,36 +33,73 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import DashboardLayout from "../components/DashboardLayout";
-import { dummyNotifications } from "../data/dummyData";
+import { notificationService } from "../services/apiService";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setNotifications(dummyNotifications);
+    loadNotifications();
   }, []);
 
-  const handleMarkAsRead = (notificationId) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
-    );
-    setSuccess("Notification marked as read");
-    setTimeout(() => setSuccess(""), 3000);
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await notificationService.getNotifications();
+      setNotifications(response.notifications || []);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+      setError('Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleMarkAsUnread = (notificationId) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, isRead: false } : n))
-    );
-    setSuccess("Notification marked as unread");
-    setTimeout(() => setSuccess(""), 3000);
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      setError("");
+      await notificationService.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+      );
+      setSuccess("Notification marked as read");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      setError(error.response?.data?.message || 'Failed to mark notification as read');
+    }
   };
 
-  const handleDeleteNotification = (notificationId) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-    setSuccess("Notification deleted");
-    setTimeout(() => setSuccess(""), 3000);
+  const handleMarkAsUnread = async (notificationId) => {
+    try {
+      setError("");
+      await notificationService.markAsUnread(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, isRead: false } : n))
+      );
+      setSuccess("Notification marked as unread");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error('Error marking notification as unread:', error);
+      setError(error.response?.data?.message || 'Failed to mark notification as unread');
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      setError("");
+      await notificationService.deleteNotification(notificationId);
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      setSuccess("Notification deleted");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      setError(error.response?.data?.message || 'Failed to delete notification');
+    }
   };
 
   const getNotificationIcon = (type) => {
@@ -106,12 +144,28 @@ const Notifications = () => {
     results: notifications.filter((n) => n.type === "results"),
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} />
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <Box sx={{ flexGrow: 1 }}>
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
             {success}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
           </Alert>
         )}
 
@@ -453,12 +507,19 @@ const Notifications = () => {
         <Box sx={{ mt: 4, textAlign: "center" }}>
           <Button
             variant="outlined"
-            onClick={() => {
-              setNotifications((prev) =>
-                prev.map((n) => ({ ...n, isRead: true }))
-              );
-              setSuccess("All notifications marked as read");
-              setTimeout(() => setSuccess(""), 3000);
+            onClick={async () => {
+              try {
+                setError("");
+                await notificationService.markAllAsRead();
+                setNotifications((prev) =>
+                  prev.map((n) => ({ ...n, isRead: true }))
+                );
+                setSuccess("All notifications marked as read");
+                setTimeout(() => setSuccess(""), 3000);
+              } catch (error) {
+                console.error('Error marking all as read:', error);
+                setError(error.response?.data?.message || 'Failed to mark all as read');
+              }
             }}
             sx={{ mr: 2 }}
           >
@@ -467,10 +528,17 @@ const Notifications = () => {
           <Button
             variant="outlined"
             color="error"
-            onClick={() => {
-              setNotifications([]);
-              setSuccess("All notifications cleared");
-              setTimeout(() => setSuccess(""), 3000);
+            onClick={async () => {
+              try {
+                setError("");
+                await notificationService.clearAll();
+                setNotifications([]);
+                setSuccess("All notifications cleared");
+                setTimeout(() => setSuccess(""), 3000);
+              } catch (error) {
+                console.error('Error clearing all notifications:', error);
+                setError(error.response?.data?.message || 'Failed to clear all notifications');
+              }
             }}
           >
             Clear All

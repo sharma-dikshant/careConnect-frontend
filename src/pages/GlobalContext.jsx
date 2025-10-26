@@ -23,6 +23,7 @@ import {
   TextField,
   Alert,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import {
   Upload as UploadIcon,
@@ -33,7 +34,7 @@ import {
   Description as DescriptionIcon,
 } from "@mui/icons-material";
 import DashboardLayout from "../components/DashboardLayout";
-import { dummyGlobalContext } from "../data/dummyData";
+import { contextService } from "../services/apiService";
 
 const GlobalContext = () => {
   const [contextFiles, setContextFiles] = useState([]);
@@ -50,43 +51,73 @@ const GlobalContext = () => {
     description: "",
   });
   const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setContextFiles(dummyGlobalContext);
+    loadContextFiles();
   }, []);
 
-  const handleUploadSubmit = () => {
-    if (uploadForm.name && uploadForm.description) {
-      const newFile = {
-        id: Date.now(),
-        name: uploadForm.name,
-        type: "PDF",
-        size: "2.1 MB",
-        uploadDate: new Date().toISOString().split("T")[0],
-        description: uploadForm.description,
-      };
-      setContextFiles((prev) => [...prev, newFile]);
-      setSuccess("File uploaded successfully!");
-      setTimeout(() => setSuccess(""), 3000);
-      setUploadDialog(false);
-      setUploadForm({ name: "", description: "", file: null });
+  const loadContextFiles = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await contextService.getGlobalContexts();
+      setContextFiles(response.contexts || []);
+    } catch (error) {
+      console.error('Error loading context files:', error);
+      setError('Failed to load context files');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditSubmit = () => {
-    setContextFiles((prev) =>
-      prev.map((f) => (f.id === editingFile.id ? { ...f, ...editForm } : f))
-    );
-    setSuccess("File updated successfully!");
-    setTimeout(() => setSuccess(""), 3000);
-    setEditDialog(false);
-    setEditingFile(null);
+  const handleUploadSubmit = async () => {
+    try {
+      setError("");
+      if (uploadForm.name && uploadForm.description && uploadForm.file) {
+        await contextService.uploadFile(uploadForm.file, 'global');
+        setSuccess("File uploaded successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+        setUploadDialog(false);
+        setUploadForm({ name: "", description: "", file: null });
+        // Reload context files
+        await loadContextFiles();
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setError(error.response?.data?.message || 'Failed to upload file');
+    }
   };
 
-  const handleDeleteFile = (fileId) => {
-    setContextFiles((prev) => prev.filter((f) => f.id !== fileId));
-    setSuccess("File deleted successfully!");
-    setTimeout(() => setSuccess(""), 3000);
+  const handleEditSubmit = async () => {
+    try {
+      setError("");
+      await contextService.updateGlobalContext(editingFile.id, editForm);
+      setSuccess("File updated successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+      setEditDialog(false);
+      setEditingFile(null);
+      // Reload context files
+      await loadContextFiles();
+    } catch (error) {
+      console.error('Error updating file:', error);
+      setError(error.response?.data?.message || 'Failed to update file');
+    }
+  };
+
+  const handleDeleteFile = async (fileId) => {
+    try {
+      setError("");
+      await contextService.deleteGlobalContext(fileId);
+      setSuccess("File deleted successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+      // Reload context files
+      await loadContextFiles();
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      setError(error.response?.data?.message || 'Failed to delete file');
+    }
   };
 
   const handleOpenEditDialog = (file) => {
@@ -120,12 +151,28 @@ const GlobalContext = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} />
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <Box sx={{ flexGrow: 1 }}>
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
             {success}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
           </Alert>
         )}
 

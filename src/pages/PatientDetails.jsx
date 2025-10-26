@@ -31,7 +31,8 @@ import {
   Paper,
   Alert,
   Divider,
-  InputAdornment
+  InputAdornment,
+  CircularProgress
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -47,7 +48,7 @@ import {
   LocalHospital as LocalHospitalIcon
 } from '@mui/icons-material';
 import DashboardLayout from '../components/DashboardLayout';
-import { dummyPatients, dummyChatHistory, dummyPatientContext } from '../data/dummyData';
+import { patientService, chatService, contextService } from '../services/apiService';
 
 const PatientDetails = () => {
   const { id } = useParams();
@@ -65,51 +66,104 @@ const PatientDetails = () => {
     file: null
   });
   const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const foundPatient = dummyPatients.find(p => p.id === parseInt(id));
-    if (foundPatient) {
-      setPatient(foundPatient);
-      setEditForm(foundPatient);
-      setChatHistory(dummyChatHistory[foundPatient.id] || []);
-      setContextFiles(dummyPatientContext[foundPatient.id] || []);
-    }
+    loadPatientData();
   }, [id]);
+
+  const loadPatientData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Load patient details
+      const patientData = await patientService.getPatient(id);
+      setPatient(patientData.patient);
+      setEditForm(patientData.patient);
+      
+      // Load chat history (assuming appointment ID is same as patient ID for now)
+      const chatData = await chatService.getChatHistory(id);
+      setChatHistory(chatData.messages || []);
+      
+      // Load context files
+      const contextData = await contextService.getLocalContexts(id);
+      setContextFiles(contextData.contexts || []);
+      
+    } catch (error) {
+      console.error('Error loading patient data:', error);
+      setError('Failed to load patient data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  const handleEditSubmit = () => {
-    setPatient(prev => ({ ...prev, ...editForm }));
-    setSuccess('Patient information updated successfully!');
-    setTimeout(() => setSuccess(''), 3000);
-    setEditDialog(false);
-  };
-
-  const handleUploadSubmit = () => {
-    if (uploadForm.name && uploadForm.description) {
-      const newFile = {
-        id: Date.now(),
-        name: uploadForm.name,
-        type: 'PDF',
-        size: '1.2 MB',
-        uploadDate: new Date().toISOString().split('T')[0],
-        description: uploadForm.description
-      };
-      setContextFiles(prev => [...prev, newFile]);
-      setSuccess('File uploaded successfully!');
+  const handleEditSubmit = async () => {
+    try {
+      setError('');
+      await patientService.updatePatient(id, editForm);
+      setPatient(prev => ({ ...prev, ...editForm }));
+      setSuccess('Patient information updated successfully!');
       setTimeout(() => setSuccess(''), 3000);
-      setUploadDialog(false);
-      setUploadForm({ name: '', description: '', file: null });
+      setEditDialog(false);
+    } catch (error) {
+      console.error('Error updating patient:', error);
+      setError(error.response?.data?.message || 'Failed to update patient');
     }
   };
 
-  const handleDeleteFile = (fileId) => {
-    setContextFiles(prev => prev.filter(f => f.id !== fileId));
-    setSuccess('File deleted successfully!');
-    setTimeout(() => setSuccess(''), 3000);
+  const handleUploadSubmit = async () => {
+    try {
+      setError('');
+      if (uploadForm.name && uploadForm.description && uploadForm.file) {
+        const formData = new FormData();
+        formData.append('file', uploadForm.file);
+        formData.append('name', uploadForm.name);
+        formData.append('description', uploadForm.description);
+        formData.append('appointmentId', id);
+        
+        await contextService.uploadFile(uploadForm.file, 'local', id);
+        setSuccess('File uploaded successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+        setUploadDialog(false);
+        setUploadForm({ name: '', description: '', file: null });
+        // Reload context files
+        await loadPatientData();
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setError(error.response?.data?.message || 'Failed to upload file');
+    }
   };
+
+  const handleDeleteFile = async (fileId) => {
+    try {
+      setError('');
+      await contextService.deleteLocalContext(fileId);
+      setSuccess('File deleted successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+      // Reload context files
+      await loadPatientData();
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      setError(error.response?.data?.message || 'Failed to delete file');
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress size={60} />
+        </Box>
+      </DashboardLayout>
+    );
+  }
 
   if (!patient) {
     return (
@@ -145,6 +199,12 @@ const PatientDetails = () => {
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
             {success}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
           </Alert>
         )}
 
