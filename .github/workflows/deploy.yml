@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Frontend
 
 on:
   push:
@@ -7,14 +7,35 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Backend
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to EC2 via SSH
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      # Copy dist to EC2
+      - name: Upload build to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "dist/*"
+          target: "/home/ubuntu/server/careConnect-frontend"
+
+      # Restart PM2
+      - name: Restart server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -23,23 +44,12 @@ jobs:
           script: |
             set -e
 
-            echo "Moving to project directory ........"
             cd /home/ubuntu/server/careConnect-frontend
-
-            echo "Pulling latest code ......"
-            git pull origin development
-
-            echo "Installing dependencies ......"
-            npm install
-
-            echo "Building project ......"
-            npm run build
 
             echo "Restarting frontend with PM2 ......"
             pm2 delete careconnect-frontend || true
             pm2 serve dist 3000 --name careconnect-frontend --spa
 
-            echo "Saving PM2 process list ......"
             pm2 save
 
-            echo "Deployment completed ........"
+            echo "Deployment completed 🚀"
