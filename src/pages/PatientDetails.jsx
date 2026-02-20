@@ -48,7 +48,7 @@ import {
   LocalHospital as LocalHospitalIcon
 } from '@mui/icons-material';
 import DashboardLayout from '../components/DashboardLayout';
-import { patientService, chatService, contextService } from '../services/apiService';
+import { patientService, messageService, careProtocolService } from '../services/apiService';
 
 const PatientDetails = () => {
   const { id } = useParams();
@@ -80,16 +80,16 @@ const PatientDetails = () => {
       
       // Load patient details
       const patientData = await patientService.getPatient(id);
-      setPatient(patientData.patient);
-      setEditForm(patientData.patient);
+      setPatient(patientData.data);
+      setEditForm(patientData.data);
       
-      // Load chat history (assuming appointment ID is same as patient ID for now)
-      const chatData = await chatService.getChatHistory(id);
-      setChatHistory(chatData.messages || []);
+      // Load messages (using appointment ID same as patient ID for now)
+      const messageData = await messageService.getMessages(id);
+      setChatHistory(messageData.messages || []);
       
-      // Load context files
-      const contextData = await contextService.getLocalContexts(id);
-      setContextFiles(contextData.contexts || []);
+      // Note: Local care protocols endpoint may not be fully implemented yet
+      // For now, set empty array
+      setContextFiles([]);
       
     } catch (error) {
       console.error('Error loading patient data:', error);
@@ -127,7 +127,7 @@ const PatientDetails = () => {
         formData.append('description', uploadForm.description);
         formData.append('appointmentId', id);
         
-        await contextService.uploadFile(uploadForm.file, 'local', id);
+        await careProtocolService.addAppointmentCareProtocol(id, uploadForm.file);
         setSuccess('File uploaded successfully!');
         setTimeout(() => setSuccess(''), 3000);
         setUploadDialog(false);
@@ -144,7 +144,7 @@ const PatientDetails = () => {
   const handleDeleteFile = async (fileId) => {
     try {
       setError('');
-      await contextService.deleteLocalContext(fileId);
+      await careProtocolService.deleteAppointmentCareProtocol(fileId);
       setSuccess('File deleted successfully!');
       setTimeout(() => setSuccess(''), 3000);
       // Reload context files
@@ -209,7 +209,7 @@ const PatientDetails = () => {
         )}
 
         {/* Patient Info Card */}
-        <Card sx={{ mb: 3 }}>
+        <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -229,6 +229,7 @@ const PatientDetails = () => {
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={() => setEditDialog(true)}
+                sx={{ borderRadius: 2, textTransform: 'none' }}
               >
                 Edit
               </Button>
@@ -282,7 +283,7 @@ const PatientDetails = () => {
         </Card>
 
         {/* Tabs */}
-        <Card>
+        <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={activeTab} onChange={handleTabChange}>
               <Tab label="Chat History" icon={<ChatIcon />} iconPosition="start" />
@@ -296,7 +297,7 @@ const PatientDetails = () => {
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="h6">Chat History</Typography>
-                  <Button variant="contained" size="small">
+                  <Button variant="contained" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>
                     Start New Chat
                   </Button>
                 </Box>
@@ -340,6 +341,7 @@ const PatientDetails = () => {
                     variant="contained"
                     startIcon={<UploadIcon />}
                     onClick={() => setUploadDialog(true)}
+                    sx={{ borderRadius: 2, textTransform: 'none' }}
                   >
                     Upload File
                   </Button>

@@ -28,6 +28,7 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
+  Avatar,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -40,7 +41,7 @@ import {
   TrendingUp as TrendingUpIcon,
 } from "@mui/icons-material";
 import DashboardLayout from "../components/DashboardLayout";
-import { patientService, notificationService, contextService } from "../services/apiService";
+import { patientService, careProtocolService } from "../services/apiService";
 import { useAuth } from "../contexts/AuthContext";
 
 const Dashboard = () => {
@@ -67,24 +68,46 @@ const Dashboard = () => {
     loadDashboardData();
   }, []);
 
+  // Helper function to extract filename from URL
+  const extractFilenameFromUrl = (url) => {
+    if (!url) return 'Unknown File';
+    try {
+      const urlParts = url.split('/');
+      const filenameWithUUID = urlParts[urlParts.length - 1];
+      // Remove UUID prefix (e.g., "216b983d-203a-40ae-9b4a-13c78ed93147_docker_cheatsheet.pdf")
+      const parts = filenameWithUUID.split('_');
+      if (parts.length > 1) {
+        // Remove first part (UUID) and join the rest
+        return parts.slice(1).join('_');
+      }
+      return filenameWithUUID;
+    } catch (e) {
+      return 'Unknown File';
+    }
+  };
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
       
       // Load patients
-      if (user?.id) {
-        const patientsData = await patientService.getAllPatients(user.id);
-        setPatients(patientsData.patients || []);
-      }
+      const patientsData = await patientService.getAllPatients();
+      setPatients(patientsData.data || []);
       
-      // Load notifications
-      const notificationsData = await notificationService.getNotifications();
-      setNotifications(notificationsData.notifications || []);
+      // Load care protocols
+      const careProtocolData = await careProtocolService.getAllCareProtocols();
       
-      // Load context files
-      const contextData = await contextService.getGlobalContexts();
-      setContextFiles(contextData.contexts || []);
+      // Extract filename from URL if name field doesn't exist
+      const filesWithNames = (careProtocolData.data || []).map(file => ({
+        ...file,
+        name: file.name || extractFilenameFromUrl(file.file)
+      }));
+      
+      setContextFiles(filesWithNames);
+      
+      // Note: Notifications service removed - backend doesn't have this endpoint
+      setNotifications([]);
       
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -187,25 +210,25 @@ const Dashboard = () => {
     {
       title: "Total Patients",
       value: patients.length,
-      icon: <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />,
+      icon: <PeopleIcon sx={{ fontSize: 24, color: "primary.main" }} />,
       color: "primary.main",
     },
     {
       title: "Active Cases",
       value: patients.filter((p) => p.status === "Active").length,
-      icon: <TrendingUpIcon sx={{ fontSize: 40, color: "secondary.main" }} />,
+      icon: <TrendingUpIcon sx={{ fontSize: 24, color: "secondary.main" }} />,
       color: "secondary.main",
     },
     {
       title: "Notifications",
       value: notifications.filter((n) => !n.isRead).length,
-      icon: <NotificationsIcon sx={{ fontSize: 40, color: "warning.main" }} />,
+      icon: <NotificationsIcon sx={{ fontSize: 24, color: "warning.main" }} />,
       color: "warning.main",
     },
     {
       title: "Context Files",
       value: contextFiles.length,
-      icon: <FolderIcon sx={{ fontSize: 40, color: "info.main" }} />,
+      icon: <FolderIcon sx={{ fontSize: 24, color: "info.main" }} />,
       color: "info.main",
     },
   ];
@@ -252,21 +275,23 @@ const Dashboard = () => {
               <Card 
                 sx={{ 
                   height: "100%",
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  transition: 'all 0.3s ease-in-out',
+                  background: 'white',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    borderColor: 'primary.main',
                   }
                 }}
               >
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Box sx={{ 
-                      p: 1.5, 
-                      borderRadius: 2, 
-                      backgroundColor: `${stat.color}15`,
+                      p: 1, 
+                      borderRadius: 1.5, 
+                      backgroundColor: `${stat.color}10`,
                       mr: 2
                     }}>
                       {stat.icon}
@@ -303,8 +328,9 @@ const Dashboard = () => {
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ 
               p: 3, 
-              borderBottom: '1px solid #E0E0E0',
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)'
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.paper',
             }}>
               <Box sx={{ 
                 display: 'flex', 
@@ -322,7 +348,7 @@ const Dashboard = () => {
                   </Typography>
                 </Box>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   startIcon={<PeopleIcon />}
                   onClick={() => navigate('/patients')}
                   sx={{
@@ -358,10 +384,7 @@ const Dashboard = () => {
                       hover
                       sx={{ 
                         '&:hover': {
-                          backgroundColor: 'primary.light',
-                          '& .MuiTableCell-root': {
-                            color: 'white',
-                          }
+                          backgroundColor: 'grey.50',
                         }
                       }}
                     >

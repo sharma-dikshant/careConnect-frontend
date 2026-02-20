@@ -33,13 +33,12 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import DashboardLayout from "../components/DashboardLayout";
-import { notificationService } from "../services/apiService";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadNotifications();
@@ -49,8 +48,8 @@ const Notifications = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await notificationService.getNotifications();
-      setNotifications(response.notifications || []);
+      // Note: Notifications service not implemented in backend yet
+      setNotifications([]);
     } catch (error) {
       console.error('Error loading notifications:', error);
       setError('Failed to load notifications');
@@ -62,7 +61,7 @@ const Notifications = () => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       setError("");
-      await notificationService.markAsRead(notificationId);
+      // Note: Backend endpoint not implemented
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
@@ -70,14 +69,14 @@ const Notifications = () => {
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      setError(error.response?.data?.message || 'Failed to mark notification as read');
+      setError('Failed to mark notification as read');
     }
   };
 
   const handleMarkAsUnread = async (notificationId) => {
     try {
       setError("");
-      await notificationService.markAsUnread(notificationId);
+      // Note: Backend endpoint not implemented
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: false } : n))
       );
@@ -85,20 +84,20 @@ const Notifications = () => {
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error('Error marking notification as unread:', error);
-      setError(error.response?.data?.message || 'Failed to mark notification as unread');
+      setError('Failed to mark notification as unread');
     }
   };
 
   const handleDeleteNotification = async (notificationId) => {
     try {
       setError("");
-      await notificationService.deleteNotification(notificationId);
+      // Note: Backend endpoint not implemented
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       setSuccess("Notification deleted");
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error('Error deleting notification:', error);
-      setError(error.response?.data?.message || 'Failed to delete notification');
+      setError('Failed to delete notification');
     }
   };
 
@@ -172,7 +171,7 @@ const Notifications = () => {
         {/* Notification Summary Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <Badge badgeContent={unreadCount} color="error">
                   <NotificationsIcon
@@ -193,7 +192,7 @@ const Notifications = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <Badge badgeContent={emergencyCount} color="error">
                   <WarningIcon
@@ -214,7 +213,7 @@ const Notifications = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <InfoIcon sx={{ fontSize: 40, color: "info.main", mb: 1 }} />
                 <Typography
@@ -231,7 +230,7 @@ const Notifications = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <ScheduleIcon
                   sx={{ fontSize: 40, color: "warning.main", mb: 1 }}
@@ -254,7 +253,7 @@ const Notifications = () => {
         <Grid container spacing={3}>
           {/* Emergency Alerts */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <WarningIcon sx={{ color: "error.main", mr: 1 }} />
@@ -374,7 +373,7 @@ const Notifications = () => {
 
           {/* Other Notifications */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, color: "primary.main" }}>
                   Other Notifications
@@ -510,7 +509,7 @@ const Notifications = () => {
             onClick={async () => {
               try {
                 setError("");
-                await notificationService.markAllAsRead();
+                // Note: Backend endpoint not implemented
                 setNotifications((prev) =>
                   prev.map((n) => ({ ...n, isRead: true }))
                 );
@@ -518,7 +517,7 @@ const Notifications = () => {
                 setTimeout(() => setSuccess(""), 3000);
               } catch (error) {
                 console.error('Error marking all as read:', error);
-                setError(error.response?.data?.message || 'Failed to mark all as read');
+                setError('Failed to mark all as read');
               }
             }}
             sx={{ mr: 2 }}
@@ -531,13 +530,13 @@ const Notifications = () => {
             onClick={async () => {
               try {
                 setError("");
-                await notificationService.clearAll();
+                // Note: Backend endpoint not implemented
                 setNotifications([]);
                 setSuccess("All notifications cleared");
                 setTimeout(() => setSuccess(""), 3000);
               } catch (error) {
                 console.error('Error clearing all notifications:', error);
-                setError(error.response?.data?.message || 'Failed to clear all notifications');
+                setError('Failed to clear all notifications');
               }
             }}
           >

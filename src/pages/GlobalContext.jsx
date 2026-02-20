@@ -34,7 +34,7 @@ import {
   Description as DescriptionIcon,
 } from "@mui/icons-material";
 import DashboardLayout from "../components/DashboardLayout";
-import { contextService } from "../services/apiService";
+import { careProtocolService } from "../services/apiService";
 
 const GlobalContext = () => {
   const [contextFiles, setContextFiles] = useState([]);
@@ -62,8 +62,16 @@ const GlobalContext = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await contextService.getGlobalContexts();
-      setContextFiles(response.contexts || []);
+      const response = await careProtocolService.getAllCareProtocols();
+      
+      // Extract filename from URL if name field doesn't exist
+      const filesWithNames = (response.data || []).map(file => ({
+        ...file,
+        name: file.name || extractFilenameFromUrl(file.file),
+        type: file.type || getFileTypeFromUrl(file.file)
+      }));
+      
+      setContextFiles(filesWithNames);
     } catch (error) {
       console.error('Error loading context files:', error);
       setError('Failed to load context files');
@@ -72,11 +80,36 @@ const GlobalContext = () => {
     }
   };
 
+  // Helper function to extract filename from URL
+  const extractFilenameFromUrl = (url) => {
+    if (!url) return 'Unknown File';
+    try {
+      const urlParts = url.split('/');
+      const filenameWithUUID = urlParts[urlParts.length - 1];
+      // Remove UUID prefix (e.g., "216b983d-203a-40ae-9b4a-13c78ed93147_docker_cheatsheet.pdf")
+      const parts = filenameWithUUID.split('_');
+      if (parts.length > 1) {
+        // Remove first part (UUID) and join the rest
+        return parts.slice(1).join('_');
+      }
+      return filenameWithUUID;
+    } catch (e) {
+      return 'Unknown File';
+    }
+  };
+
+  // Helper function to get file type from URL
+  const getFileTypeFromUrl = (url) => {
+    if (!url) return 'unknown';
+    const extension = url.split('.').pop().toLowerCase();
+    return extension || 'unknown';
+  };
+
   const handleUploadSubmit = async () => {
     try {
       setError("");
       if (uploadForm.name && uploadForm.description && uploadForm.file) {
-        await contextService.uploadFile(uploadForm.file, 'global');
+        await careProtocolService.addGlobalCareProtocol(uploadForm.file);
         setSuccess("File uploaded successfully!");
         setTimeout(() => setSuccess(""), 3000);
         setUploadDialog(false);
@@ -93,7 +126,8 @@ const GlobalContext = () => {
   const handleEditSubmit = async () => {
     try {
       setError("");
-      await contextService.updateGlobalContext(editingFile.id, editForm);
+      // Note: Update endpoint not implemented in backend yet
+      console.warn('Update care protocol not yet implemented');
       setSuccess("File updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
       setEditDialog(false);
@@ -109,7 +143,7 @@ const GlobalContext = () => {
   const handleDeleteFile = async (fileId) => {
     try {
       setError("");
-      await contextService.deleteGlobalContext(fileId);
+      await careProtocolService.deleteGlobalCareProtocol(fileId);
       setSuccess("File deleted successfully!");
       setTimeout(() => setSuccess(""), 3000);
       // Reload context files
@@ -179,7 +213,7 @@ const GlobalContext = () => {
         {/* Overview Cards */}
         <Grid container spacing={4} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <FolderIcon
                   sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
@@ -198,7 +232,7 @@ const GlobalContext = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <DescriptionIcon
                   sx={{ fontSize: 40, color: "error.main", mb: 1 }}
@@ -217,7 +251,7 @@ const GlobalContext = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <CardContent sx={{ textAlign: "center" }}>
                 <DescriptionIcon
                   sx={{ fontSize: 40, color: "success.main", mb: 1 }}
@@ -237,7 +271,7 @@ const GlobalContext = () => {
         </Grid>
 
         {/* File Management Section */}
-        <Card>
+        <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
           <CardContent>
             <Box
               sx={{

@@ -274,25 +274,25 @@ const PatientManagement = () => {
     {
       title: 'Total Patients',
       value: patients.length,
-      icon: <PersonIcon sx={{ fontSize: 40, color: 'primary.main' }} />,
+      icon: <PersonIcon sx={{ fontSize: 24, color: 'primary.main' }} />,
       color: 'primary.main',
     },
     {
       title: 'Active Patients',
       value: patients.filter(p => p.status === 'Active').length,
-      icon: <CheckCircleIcon sx={{ fontSize: 40, color: 'success.main' }} />,
+      icon: <CheckCircleIcon sx={{ fontSize: 24, color: 'success.main' }} />,
       color: 'success.main',
     },
     {
       title: 'Inactive Patients',
       value: patients.filter(p => p.status === 'Inactive').length,
-      icon: <BlockIcon sx={{ fontSize: 40, color: 'warning.main' }} />,
+      icon: <BlockIcon sx={{ fontSize: 24, color: 'warning.main' }} />,
       color: 'warning.main',
     },
     {
       title: 'Discharged',
       value: patients.filter(p => p.status === 'Discharged').length,
-      icon: <MedicalIcon sx={{ fontSize: 40, color: 'info.main' }} />,
+      icon: <MedicalIcon sx={{ fontSize: 24, color: 'info.main' }} />,
       color: 'info.main',
     },
   ];
@@ -338,9 +338,9 @@ const PatientManagement = () => {
               py: 1.5,
               textTransform: 'none',
               fontWeight: 500,
-              boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+              boxShadow: 'none',
               '&:hover': {
-                boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
+                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.24)',
               }
             }}
           >
@@ -367,21 +367,23 @@ const PatientManagement = () => {
               <Card 
                 sx={{ 
                   height: "100%",
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  transition: 'all 0.3s ease-in-out',
+                  background: 'white',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    borderColor: 'primary.main',
                   }
                 }}
               >
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Box sx={{ 
-                      p: 1.5, 
-                      borderRadius: 2, 
-                      backgroundColor: `${stat.color}15`,
+                      p: 1, 
+                      borderRadius: 1.5, 
+                      backgroundColor: `${stat.color}10`,
                       mr: 2
                     }}>
                       {stat.icon}
@@ -414,7 +416,7 @@ const PatientManagement = () => {
         </Grid>
 
         {/* Search and Filter Controls */}
-        <Card sx={{ mb: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+        <Card sx={{ mb: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
           <CardContent sx={{ p: 3 }}>
             <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -475,12 +477,13 @@ const PatientManagement = () => {
         </Card>
 
         {/* Patients Table */}
-        <Card sx={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+        <Card sx={{ border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ 
               p: 3, 
-              borderBottom: '1px solid #E0E0E0',
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)'
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.paper',
             }}>
               <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600 }}>
                 Patients ({filteredPatients.length})
@@ -506,10 +509,7 @@ const PatientManagement = () => {
                       hover
                       sx={{ 
                         '&:hover': {
-                          backgroundColor: 'primary.light',
-                          '& .MuiTableCell-root': {
-                            color: 'white',
-                          }
+                          backgroundColor: 'grey.50',
                         }
                       }}
                     >

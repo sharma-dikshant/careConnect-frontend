@@ -47,6 +47,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.getProfile();
       console.log('AuthContext: Profile response', response);
       setUser(response.data);
+      // Update localStorage with fresh user data
+      localStorage.setItem('careconnect_user', JSON.stringify(response.data));
     } catch (error) {
       console.error('AuthContext: Token verification failed', error);
       // If it's a network error, keep the user logged in locally
@@ -64,10 +66,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, userType = 'doctor') => {
     try {
       setLoading(true);
-      const response = await authService.login(email, password);
+      const response = await authService.login(email, password, userType);
       
       if (response.data && response.data.token) {
         const { token } = response.data;
@@ -76,9 +78,16 @@ export const AuthProvider = ({ children }) => {
         // Get user profile after successful login
         const profileResponse = await authService.getProfile();
         const userData = profileResponse.data;
-        localStorage.setItem('careconnect_user', JSON.stringify(userData));
         
-        setUser(userData);
+        // Store user role
+        const userWithRole = {
+          ...userData,
+          role: userType
+        };
+        
+        localStorage.setItem('careconnect_user', JSON.stringify(userWithRole));
+        setUser(userWithRole);
+        
         return { success: true };
       } else {
         return { 
@@ -97,10 +106,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (userData) => {
+  const signup = async (userData, userType = 'doctor') => {
     try {
       setLoading(true);
-      const response = await authService.signup(userData);
+      const response = await authService.signup(userData, userType);
       
       if (response.data && response.data.token) {
         const { token } = response.data;
@@ -108,10 +117,17 @@ export const AuthProvider = ({ children }) => {
         
         // Get user profile after successful signup
         const profileResponse = await authService.getProfile();
-        const userData = profileResponse.data;
-        localStorage.setItem('careconnect_user', JSON.stringify(userData));
+        const userProfileData = profileResponse.data;
         
-        setUser(userData);
+        // Store user role
+        const userWithRole = {
+          ...userProfileData,
+          role: userType
+        };
+        
+        localStorage.setItem('careconnect_user', JSON.stringify(userWithRole));
+        setUser(userWithRole);
+        
         return { success: true, message: response.message };
       } else {
         return { success: false, error: response.message || 'Signup failed' };
@@ -144,7 +160,8 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    loading
+    loading,
+    userRole: user?.role || null
   };
 
   return (

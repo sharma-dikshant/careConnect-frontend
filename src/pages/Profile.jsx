@@ -35,7 +35,7 @@ import {
   AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 import DashboardLayout from '../components/DashboardLayout';
-import { profileService } from '../services/apiService';
+import { userService } from '../services/apiService';
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
@@ -53,7 +53,7 @@ const Profile = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await profileService.getProfile();
+      const response = await userService.getProfile();
       setProfile(response.data);
       setEditForm(response.data);
     } catch (error) {
@@ -77,7 +77,7 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       setError("");
-      const response = await profileService.updateProfile(editForm);
+      const response = await userService.updateProfile(editForm);
       setProfile(editForm);
       setEditMode(false);
       setSuccess('Profile updated successfully!');
@@ -155,9 +155,10 @@ const Profile = () => {
           {/* Profile Header */}
           <Grid item xs={12}>
             <Card sx={{ 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '1px solid rgba(0,0,0,0.05)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              background: 'white',
+              border: '1px solid',
+              borderColor: 'divider',
+              boxShadow: 'none'
             }}>
               <CardContent sx={{ p: 4 }}>
                 <Box sx={{ 
@@ -174,8 +175,9 @@ const Profile = () => {
                         height: { xs: 80, sm: 100, md: 120 }, 
                         bgcolor: 'primary.main',
                         fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                        bgcolor: 'primary.main',
+                        fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
                         mr: 3,
-                        boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)'
                       }}
                     >
                       {profile?.name?.charAt(0) || 'U'}
@@ -213,7 +215,7 @@ const Profile = () => {
                       py: 1.5,
                       textTransform: 'none',
                       fontWeight: 500,
-                      boxShadow: editMode ? 'none' : '0 4px 12px rgba(46, 125, 50, 0.3)',
+                      boxShadow: 'none',
                     }}
                   >
                     {editMode ? 'Cancel' : 'Edit Profile'}
@@ -337,9 +339,9 @@ const Profile = () => {
                         borderRadius: 2, 
                         px: 3, 
                         py: 1.5,
-                        boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+                        boxShadow: 'none',
                         '&:hover': {
-                          boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
+                          boxShadow: '0 2px 8px rgba(46, 125, 50, 0.24)',
                         }
                       }}
                     >
@@ -448,8 +450,9 @@ const Profile = () => {
                       p: 3, 
                       textAlign: 'center',
                       borderRadius: 2,
-                      background: 'linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%)',
-                      border: '1px solid rgba(25, 118, 210, 0.1)',
+                      background: 'white',
+                      border: '1px solid',
+                      borderColor: 'divider',
                       transition: 'all 0.3s ease-in-out',
                       '&:hover': {
                         transform: 'translateY(-2px)',
@@ -469,8 +472,9 @@ const Profile = () => {
                       p: 3, 
                       textAlign: 'center',
                       borderRadius: 2,
-                      background: 'linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%)',
-                      border: '1px solid rgba(46, 125, 50, 0.1)',
+                      background: 'white',
+                      border: '1px solid',
+                      borderColor: 'divider',
                       transition: 'all 0.3s ease-in-out',
                       '&:hover': {
                         transform: 'translateY(-2px)',

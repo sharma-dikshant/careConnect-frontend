@@ -35,9 +35,10 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
-const drawerWidth = 280;
+const drawerWidth = 256;
 
-const menuItems = [
+// Doctor menu items
+const doctorMenuItems = [
   { 
     text: "Dashboard", 
     icon: <DashboardIcon />, 
@@ -70,11 +71,33 @@ const menuItems = [
   },
 ];
 
+// Patient menu items
+const patientMenuItems = [
+  { 
+    text: "Dashboard", 
+    icon: <DashboardIcon />, 
+    path: "/",
+    description: "My appointments"
+  },
+  {
+    text: "Notifications",
+    icon: <NotificationsIcon />,
+    path: "/notifications",
+    description: "Alerts and updates"
+  },
+  { 
+    text: "Profile", 
+    icon: <PersonIcon />, 
+    path: "/profile",
+    description: "Account settings"
+  },
+];
+
 const DashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout } = useAuth();
+  const { user, logout, userRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -103,30 +126,29 @@ const DashboardLayout = ({ children }) => {
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
+      {/* Header */}
       <Box sx={{ 
         p: 3, 
-        background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
-        color: 'white'
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 2,
+        height: 64,
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Box sx={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 2, 
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mr: 2
-          }}>
-            <MedicalIcon sx={{ color: 'white', fontSize: 24 }} />
-          </Box>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
-              CareConnect
-            </Typography>
-          </Box>
+        <Box sx={{ 
+          width: 32, 
+          height: 32, 
+          borderRadius: 1, 
+          backgroundColor: 'primary.main',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(46, 125, 50, 0.2)'
+        }}>
+          <MedicalIcon sx={{ color: 'white', fontSize: 20 }} />
         </Box>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.125rem' }}>
+          CareConnect
+        </Typography>
       </Box>
       
       <Divider />
@@ -134,60 +156,61 @@ const DashboardLayout = ({ children }) => {
       {/* Navigation */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         <List sx={{ px: 2, py: 1 }}>
-          {menuItems.map((item) => (
+          {(userRole === 'patient' ? patientMenuItems : doctorMenuItems).map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
                 selected={location.pathname === item.path}
                 onClick={() => handleNavigation(item.path)}
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 1,
                   mb: 0.5,
-                  py: 1.5,
-                  px: 2,
+                  py: 1,
+                  px: 1.5,
+                  transition: 'all 0.2s ease-in-out',
                   "&.Mui-selected": {
-                    backgroundColor: "primary.main",
-                    color: "white",
+                    backgroundColor: "primary.50",
+                    color: "primary.main",
                     "&:hover": {
-                      backgroundColor: "primary.dark",
+                      backgroundColor: "primary.100",
                     },
                     "& .MuiListItemIcon-root": {
-                      color: "white",
+                      color: "primary.main",
                     },
                     "& .MuiListItemText-primary": {
-                      color: "white",
+                      color: "primary.main",
                       fontWeight: 600,
                     },
                     "& .MuiListItemText-secondary": {
-                      color: "rgba(255,255,255,0.8)",
+                      color: "primary.main",
+                      opacity: 0.8,
                     },
                   },
                   "&:hover": {
-                    backgroundColor: "primary.light",
-                    color: "white",
+                    backgroundColor: "grey.50",
+                    color: "text.primary",
                     "& .MuiListItemIcon-root": {
-                      color: "white",
+                      color: "primary.main",
                     },
                   },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: location.pathname === item.path ? "white" : "primary.main",
-                    minWidth: 40,
+                    color: location.pathname === item.path ? "primary.main" : "text.secondary",
+                    minWidth: 32,
+                    "& svg": {
+                      fontSize: 20,
+                    }
                   }}
                 >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
                   primary={item.text}
-                  secondary={item.description}
+                  // secondary={item.description} // Removing description for cleaner look
                   primaryTypographyProps={{
-                    fontSize: '0.9rem',
+                    fontSize: '0.875rem',
                     fontWeight: location.pathname === item.path ? 600 : 500,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.75rem',
-                    color: location.pathname === item.path ? 'rgba(255,255,255,0.8)' : 'text.secondary',
                   }}
                 />
               </ListItemButton>
@@ -197,16 +220,26 @@ const DashboardLayout = ({ children }) => {
       </Box>
       
       {/* User Info */}
-      <Box sx={{ p: 2, borderTop: '1px solid #E0E0E0' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 40, height: 40 }}>
+      <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
+          <Avatar 
+            sx={{ 
+              bgcolor: 'primary.50', 
+              color: 'primary.main',
+              mr: 2, 
+              width: 32, 
+              height: 32,
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}
+          >
             {user?.name?.charAt(0) || 'D'}
           </Avatar>
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
               Dr. {user?.name || 'User'}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
               {user?.specialization || 'Medical Professional'}
             </Typography>
           </Box>
@@ -222,10 +255,11 @@ const DashboardLayout = ({ children }) => {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          backgroundColor: 'white',
+          backgroundColor: 'background.paper',
           color: 'text.primary',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          borderBottom: '1px solid rgba(0,0,0,0.05)',
+          boxShadow: 'none',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <Toolbar sx={{ px: 3, py: 1 }}>

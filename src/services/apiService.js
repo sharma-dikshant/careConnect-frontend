@@ -3,14 +3,15 @@ import ENDPOINTS from './endpoints';
 
 // Auth Services
 export const authService = {
-  login: async (email, password) => {
-    const response = await API.post(ENDPOINTS.auth.login, { type: "doctor", email, password });
-    console.log(response.data)
+  login: async (email, password, userType = 'doctor') => {
+    const response = await API.post(ENDPOINTS.auth.login, { type: userType, email, password });
+    console.log(response.data);
     return response.data;
   },
 
-  signup: async (userData) => {
-    const response = await API.post(ENDPOINTS.auth.signup, userData);
+  signup: async (userData, userType = 'doctor') => {
+    const endpoint = userType === 'doctor' ? ENDPOINTS.auth.signup_doctor : ENDPOINTS.auth.signup_patient;
+    const response = await API.post(endpoint, userData);
     return response.data;
   },
 
@@ -22,18 +23,13 @@ export const authService = {
   getProfile: async () => {
     const response = await API.get(ENDPOINTS.auth.profile);
     return response.data;
-  },
-
-  refreshToken: async () => {
-    const response = await API.post(ENDPOINTS.auth.refresh);
-    return response.data;
   }
 };
 
 // Patient Services
 export const patientService = {
-  getAllPatients: async (doctorId) => {
-    const response = await API.get(ENDPOINTS.patients.get_all_patients_of_doctor(doctorId));
+  getAllPatients: async () => {
+    const response = await API.get(ENDPOINTS.patients.get_all_patients);
     return response.data;
   },
 
@@ -60,165 +56,93 @@ export const patientService = {
   deactivatePatient: async (patientId) => {
     const response = await API.patch(ENDPOINTS.patients.inactive_patient(patientId));
     return response.data;
-  },
-
-  searchPatients: async (searchTerm) => {
-    const response = await API.get(ENDPOINTS.patients.search_patients, {
-      params: { q: searchTerm }
-    });
-    return response.data;
   }
 };
 
-// Context Services
-export const contextService = {
-  getGlobalContexts: async () => {
-    const response = await API.get(ENDPOINTS.contexts.get_global_context);
+// Care Protocol Services (formerly Context Services)
+export const careProtocolService = {
+  getAllCareProtocols: async () => {
+    const response = await API.get(ENDPOINTS.care_protocols.get_all);
     return response.data;
   },
 
-  getLocalContexts: async (appointmentId) => {
-    const response = await API.get(ENDPOINTS.contexts.get_local_context(appointmentId));
+  getCareProtocolById: async (id) => {
+    const response = await API.get(ENDPOINTS.care_protocols.get_by_id(id));
     return response.data;
   },
 
-  addGlobalContext: async (contextData) => {
-    const response = await API.post(ENDPOINTS.contexts.add_global_context, contextData);
-    return response.data;
-  },
-
-  addLocalContext: async (appointmentId, contextData) => {
-    const response = await API.post(ENDPOINTS.contexts.add_appointment_context(appointmentId), contextData);
-    return response.data;
-  },
-
-  updateGlobalContext: async (contextId, contextData) => {
-    const response = await API.put(ENDPOINTS.contexts.update_global_context(contextId), contextData);
-    return response.data;
-  },
-
-  updateLocalContext: async (contextId, contextData) => {
-    const response = await API.put(ENDPOINTS.contexts.update_local_context(contextId), contextData);
-    return response.data;
-  },
-
-  deleteGlobalContext: async (contextId) => {
-    const response = await API.delete(ENDPOINTS.contexts.delete_global_context(contextId));
-    return response.data;
-  },
-
-  deleteLocalContext: async (contextId) => {
-    const response = await API.delete(ENDPOINTS.contexts.delete_local_context(contextId));
-    return response.data;
-  },
-
-  uploadFile: async (file, contextType = 'global', appointmentId = null) => {
+  addGlobalCareProtocol: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('type', contextType);
-    if (appointmentId) {
-      formData.append('appointmentId', appointmentId);
-    }
 
-    const response = await API.post(ENDPOINTS.contexts.upload_file, formData, {
+    const response = await API.post(ENDPOINTS.care_protocols.add_global, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }
     });
     return response.data;
+  },
+
+  addAppointmentCareProtocol: async (appointmentId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await API.post(ENDPOINTS.care_protocols.add_appointment(appointmentId), formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    return response.data;
+  },
+
+  deleteGlobalCareProtocol: async (contextId) => {
+    const response = await API.delete(ENDPOINTS.care_protocols.delete_global(contextId));
+    return response.data;
+  },
+
+  deleteAppointmentCareProtocol: async (contextId) => {
+    const response = await API.delete(ENDPOINTS.care_protocols.delete_appointment(contextId));
+    return response.data;
+  },
+
+  getAppointmentCareProtocols: async (appointmentId) => {
+    const response = await API.get(`/care-protocols/appointments/${appointmentId}`);
+    return response.data;
   }
 };
 
-// Chat Services
-export const chatService = {
-  getChatHistory: async (appointmentId) => {
-    const response = await API.get(ENDPOINTS.chats.get_chat_history(appointmentId));
+// Message Services (formerly Chat Services)
+export const messageService = {
+  getMessages: async (appointmentId) => {
+    const response = await API.get(ENDPOINTS.messages.get_messages(appointmentId));
     return response.data;
   },
 
   sendMessage: async (appointmentId, messageData) => {
-    const response = await API.post(ENDPOINTS.chats.send_message(appointmentId), messageData);
-    return response.data;
-  },
-
-  getChats: async (appointmentId) => {
-    const response = await API.get(ENDPOINTS.chats.get_chats(appointmentId));
-    return response.data;
-  },
-
-  createChat: async (appointmentId, chatData) => {
-    const response = await API.post(ENDPOINTS.chats.add_chat(appointmentId), chatData);
+    const response = await API.post(ENDPOINTS.messages.send_message(appointmentId), messageData);
     return response.data;
   }
 };
 
-// Notification Services
-export const notificationService = {
-  getNotifications: async () => {
-    const response = await API.get(ENDPOINTS.notifications.get_notifications);
-    return response.data;
-  },
-
-  markAsRead: async (notificationId) => {
-    const response = await API.patch(ENDPOINTS.notifications.mark_as_read(notificationId));
-    return response.data;
-  },
-
-  markAsUnread: async (notificationId) => {
-    const response = await API.patch(ENDPOINTS.notifications.mark_as_unread(notificationId));
-    return response.data;
-  },
-
-  deleteNotification: async (notificationId) => {
-    const response = await API.delete(ENDPOINTS.notifications.delete_notification(notificationId));
-    return response.data;
-  },
-
-  markAllAsRead: async () => {
-    const response = await API.patch(ENDPOINTS.notifications.mark_all_read);
-    return response.data;
-  },
-
-  clearAll: async () => {
-    const response = await API.delete(ENDPOINTS.notifications.clear_all);
-    return response.data;
-  }
-};
-
-// Profile Services
-export const profileService = {
+// User/Profile Services
+export const userService = {
   getProfile: async () => {
-    const response = await API.get(ENDPOINTS.profile.get_profile);
+    const response = await API.get(ENDPOINTS.users.get_profile);
     return response.data;
   },
 
   updateProfile: async (profileData) => {
-    const response = await API.patch(ENDPOINTS.profile.update_profile, profileData);
-    return response.data;
-  },
-
-  uploadAvatar: async (avatarFile) => {
-    const formData = new FormData();
-    formData.append('avatar', avatarFile);
-
-    const response = await API.post(ENDPOINTS.profile.upload_avatar, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    });
+    const response = await API.patch(ENDPOINTS.users.update_profile, profileData);
     return response.data;
   }
 };
 
 // Appointment Services
 export const appointmentService = {
-  getAppointments: async () => {
-    const response = await API.get(ENDPOINTS.appointments.get_appointments);
-    return response.data;
-  },
-
-  getAppointment: async (appointmentId) => {
-    const response = await API.get(ENDPOINTS.appointments.get_appointment(appointmentId));
+  getAppointments: async (type = 'doctor') => {
+    const response = await API.get(ENDPOINTS.appointments.get_appointments, {
+      params: { type }
+    });
     return response.data;
   },
 
@@ -227,13 +151,13 @@ export const appointmentService = {
     return response.data;
   },
 
-  updateAppointment: async (appointmentId, appointmentData) => {
-    const response = await API.put(ENDPOINTS.appointments.update_appointment(appointmentId), appointmentData);
+  getAppointmentById: async (appointmentId) => {
+    const response = await API.get(`${ENDPOINTS.appointments.get_appointments}/${appointmentId}`);
     return response.data;
   },
 
-  deleteAppointment: async (appointmentId) => {
-    const response = await API.delete(ENDPOINTS.appointments.delete_appointment(appointmentId));
+  getAppointmentMessages: async (appointmentId) => {
+    const response = await API.get(ENDPOINTS.appointments.get_appointment_messages(appointmentId));
     return response.data;
   }
 };
@@ -242,9 +166,8 @@ export const appointmentService = {
 export default {
   authService,
   patientService,
-  contextService,
-  chatService,
-  notificationService,
-  profileService,
+  careProtocolService,
+  messageService,
+  userService,
   appointmentService
 };
