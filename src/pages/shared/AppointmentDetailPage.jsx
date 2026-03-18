@@ -1,8 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
-  CalendarDays,
   User,
   Stethoscope,
   RefreshCw,
@@ -12,6 +11,7 @@ import { useMessages, useSendMessage } from '@/hooks/useMessages'
 import { useAuth } from '@/hooks/useAuth'
 import { ChatContainer } from '@/components/chat/ChatContainer'
 import { ChatInput, ReadOnlyBar } from '@/components/chat/ChatInput'
+import { AppointmentProtocolsPanel } from '@/components/protocols/AppointmentProtocolsPanel'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Separator } from '@/components/ui/Separator'
@@ -127,6 +127,11 @@ export function AppointmentDetailPage() {
 
       {/* ── Appointment meta ─────────────────────────────────────────────── */}
       <AppointmentMeta id={id} messages={messages} role={role} />
+
+      {/* ── Protocols panel (collapsible) ────────────────────────────────── */}
+      <div className="shrink-0 px-3 pt-3">
+        <AppointmentProtocolsPanel appointmentId={id} viewerRole={role} />
+      </div>
 
       {/* ── Chat messages ────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-hidden bg-brand-slate-50/50">
