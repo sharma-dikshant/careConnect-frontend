@@ -4,7 +4,6 @@ import { PublicRoute } from './PublicRoute'
 import { AppShell } from '@/components/layout/AppShell'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { ROLES, ROUTES } from '@/lib/constants'
-import { useAuth } from '@/hooks/useAuth'
 
 // Auth pages
 import { LoginPage } from '@/pages/auth/LoginPage'
@@ -21,26 +20,16 @@ import { PatientDashboardPage } from '@/pages/patient/DashboardPage'
 import { PatientAppointmentsPage } from '@/pages/patient/AppointmentsPage'
 
 // Shared pages
+import { HomePage } from '@/pages/shared/HomePage'
 import { AppointmentDetailPage } from '@/pages/shared/AppointmentDetailPage'
 import { ProfilePage } from '@/pages/shared/ProfilePage'
 import { NotFoundPage } from '@/pages/shared/NotFoundPage'
 
-function RootRedirect() {
-  const { token, role } = useAuth()
-  if (!token) return <Navigate to={ROUTES.LOGIN} replace />
-  return (
-    <Navigate
-      to={role === ROLES.DOCTOR ? ROUTES.DOCTOR_DASHBOARD : ROUTES.PATIENT_DASHBOARD}
-      replace
-    />
-  )
-}
-
 export function AppRouter() {
   return (
     <Routes>
-      {/* Root redirect */}
-      <Route path="/" element={<RootRedirect />} />
+      {/* ── Homepage (public) ─────────────────────────────────────────────── */}
+      <Route path="/" element={<HomePage />} />
 
       {/* ── Public routes (auth) ───────────────────────────────────────────── */}
       <Route element={<PublicRoute />}>
