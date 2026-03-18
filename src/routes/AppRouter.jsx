@@ -15,6 +15,7 @@ import { SignupPatientPage } from '@/pages/auth/SignupPatientPage'
 import { DoctorDashboardPage } from '@/pages/doctor/DashboardPage'
 import { DoctorAppointmentsPage } from '@/pages/doctor/AppointmentsPage'
 import { DoctorAppointmentDetailPage } from '@/pages/doctor/AppointmentDetailPage'
+import { DoctorProtocolsPage } from '@/pages/doctor/ProtocolsPage'
 
 // Patient pages
 import { PatientDashboardPage } from '@/pages/patient/DashboardPage'
@@ -60,6 +61,7 @@ export function AppRouter() {
             path="/doctor/appointments/:id"
             element={<DoctorAppointmentDetailPage />}
           />
+          <Route path="/doctor/protocols" element={<DoctorProtocolsPage />} />
           <Route path="/doctor/profile" element={<ProfilePage />} />
         </Route>
       </Route>

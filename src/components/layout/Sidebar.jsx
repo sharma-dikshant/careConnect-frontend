@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   CalendarDays,
+  ClipboardList,
   LayoutDashboard,
   MessageSquare,
   Search,
@@ -21,6 +22,11 @@ const DOCTOR_NAV = [
     label: 'Appointments',
     to: ROUTES.DOCTOR_APPOINTMENTS,
     icon: CalendarDays,
+  },
+  {
+    label: 'Protocols',
+    to: '/doctor/protocols',
+    icon: ClipboardList,
   },
   {
     label: 'Search Patients',
