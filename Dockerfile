@@ -6,7 +6,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy dependency manifests first (layer cache)
-COPY package.json package-lock.json ./
+COPY package.json ./
 
 # Install all deps (including devDeps needed for build)
 RUN npm i --ignore-scripts
