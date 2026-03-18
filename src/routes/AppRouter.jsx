@@ -14,15 +14,14 @@ import { SignupPatientPage } from '@/pages/auth/SignupPatientPage'
 // Doctor pages
 import { DoctorDashboardPage } from '@/pages/doctor/DashboardPage'
 import { DoctorAppointmentsPage } from '@/pages/doctor/AppointmentsPage'
-import { DoctorAppointmentDetailPage } from '@/pages/doctor/AppointmentDetailPage'
 import { DoctorProtocolsPage } from '@/pages/doctor/ProtocolsPage'
 
 // Patient pages
 import { PatientDashboardPage } from '@/pages/patient/DashboardPage'
 import { PatientAppointmentsPage } from '@/pages/patient/AppointmentsPage'
-import { PatientAppointmentDetailPage } from '@/pages/patient/AppointmentDetailPage'
 
 // Shared pages
+import { AppointmentDetailPage } from '@/pages/shared/AppointmentDetailPage'
 import { ProfilePage } from '@/pages/shared/ProfilePage'
 import { NotFoundPage } from '@/pages/shared/NotFoundPage'
 
@@ -57,10 +56,7 @@ export function AppRouter() {
         <Route element={<AppShell />}>
           <Route path="/doctor/dashboard" element={<DoctorDashboardPage />} />
           <Route path="/doctor/appointments" element={<DoctorAppointmentsPage />} />
-          <Route
-            path="/doctor/appointments/:id"
-            element={<DoctorAppointmentDetailPage />}
-          />
+          <Route path="/doctor/appointments/:id" element={<AppointmentDetailPage />} />
           <Route path="/doctor/protocols" element={<DoctorProtocolsPage />} />
           <Route path="/doctor/profile" element={<ProfilePage />} />
         </Route>
@@ -71,10 +67,7 @@ export function AppRouter() {
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboardPage />} />
           <Route path="/patient/appointments" element={<PatientAppointmentsPage />} />
-          <Route
-            path="/patient/appointments/:id"
-            element={<PatientAppointmentDetailPage />}
-          />
+          <Route path="/patient/appointments/:id" element={<AppointmentDetailPage />} />
           <Route path="/patient/profile" element={<ProfilePage />} />
         </Route>
       </Route>
