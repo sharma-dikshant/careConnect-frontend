@@ -1,30 +1,33 @@
 import { useCallback, useState } from 'react'
-import { Plus, ClipboardList } from 'lucide-react'
-import { useProtocols, useCreateProtocol, useDeleteProtocol } from '@/hooks/useProtocols'
+import { Upload, ClipboardList, RefreshCw } from 'lucide-react'
+import {
+  useGlobalProtocols,
+  useUploadGlobalProtocol,
+  useDeleteCareProtocol,
+} from '@/hooks/useCareProtocols'
 import { ProtocolCard } from '@/components/protocols/ProtocolCard'
-import { ProtocolFormModal } from '@/components/protocols/ProtocolFormModal'
+import { ProtocolUploadModal } from '@/components/protocols/ProtocolUploadModal'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 
-// ─── Skeleton grid ─────────────────────────────────────────────────────────────
 function ProtocolSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-white p-5 space-y-3">
-      <div className="flex items-center gap-2.5">
-        <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
-        <Skeleton className="h-4 w-40 rounded" />
+    <div className="rounded-xl border border-border bg-white p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
+        <Skeleton className="h-4 flex-1 rounded" />
       </div>
-      <Skeleton className="h-3 w-full rounded" />
-      <Skeleton className="h-3 w-3/4 rounded" />
-      <Skeleton className="h-3 w-1/2 rounded" />
-      <div className="pt-1 border-t border-border/60">
+      <div className="pt-2 border-t border-border/60 flex items-center justify-between">
         <Skeleton className="h-3 w-28 rounded" />
+        <div className="flex gap-1">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </div>
       </div>
     </div>
   )
 }
 
-// ─── Empty state ───────────────────────────────────────────────────────────────
 function EmptyState({ onAdd }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4 text-center">
@@ -34,44 +37,40 @@ function EmptyState({ onAdd }) {
       <div>
         <p className="font-semibold text-foreground">No protocols yet</p>
         <p className="text-sm text-muted-foreground mt-1 max-w-[240px]">
-          Add your first protocol to share standard care instructions with patients.
+          Upload PDF documents to build your personal care protocol library.
         </p>
       </div>
       <Button size="sm" onClick={onAdd}>
-        <Plus className="h-4 w-4" />
-        Add Protocol
+        <Upload className="h-4 w-4" />
+        Upload PDF
       </Button>
     </div>
   )
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
 export function DoctorProtocolsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [page] = useState(1)
 
-  const { data, isLoading, error } = useProtocols()
-  const { mutateAsync: create, isPending: isCreating } = useCreateProtocol()
-  const { mutateAsync: remove } = useDeleteProtocol()
+  const { data, isLoading, error, refetch } = useGlobalProtocols({ page, limit: 20 })
+  const { mutateAsync: upload, isPending: isUploading } = useUploadGlobalProtocol()
+  const { mutateAsync: remove } = useDeleteCareProtocol()
 
   const protocols = data?.items ?? []
   const total = data?.meta?.total ?? 0
 
   const openModal = useCallback(() => setModalOpen(true), [])
-  const closeModal = useCallback(() => setModalOpen(false), [])
 
-  async function handleCreate(formData) {
-    await create(formData)
-    closeModal()
+  async function handleUpload(file) {
+    await upload(file)
+    setModalOpen(false)
   }
 
   async function handleDelete(id) {
     setDeletingId(id)
-    try {
-      await remove(id)
-    } finally {
-      setDeletingId(null)
-    }
+    try { await remove(id) }
+    finally { setDeletingId(null) }
   }
 
   return (
@@ -79,15 +78,29 @@ export function DoctorProtocolsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Protocols</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Care Protocols</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {isLoading ? 'Loading…' : `${total} protocol${total !== 1 ? 's' : ''}`}
+            {isLoading
+              ? 'Loading…'
+              : `${total} global protocol${total !== 1 ? 's' : ''} in your library`}
           </p>
         </div>
-        <Button size="sm" onClick={openModal} id="add-protocol-btn">
-          <Plus className="h-4 w-4" />
-          Add Protocol
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button size="sm" onClick={openModal} id="upload-protocol-btn">
+            <Upload className="h-4 w-4" />
+            Upload PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Info callout */}
+      <div className="rounded-xl bg-brand-blue-50 border border-brand-blue-200 px-4 py-3 text-sm text-brand-blue-800">
+        <strong>Global protocols</strong> are your personal PDF library. They are automatically
+        visible to patients in every appointment you create.
+        Upload appointment-specific PDFs from within an appointment's detail page.
       </div>
 
       {/* Error */}
@@ -99,28 +112,28 @@ export function DoctorProtocolsPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isLoading ? (
-          [...Array(3)].map((_, i) => <ProtocolSkeleton key={i} />)
-        ) : protocols.length === 0 ? (
-          <EmptyState onAdd={openModal} />
-        ) : (
-          protocols.map((protocol) => (
-            <ProtocolCard
-              key={protocol.id}
-              protocol={protocol}
-              onDelete={handleDelete}
-              isDeleting={deletingId === protocol.id}
-            />
-          ))
-        )}
+        {isLoading
+          ? [...Array(3)].map((_, i) => <ProtocolSkeleton key={i} />)
+          : protocols.length === 0
+            ? <EmptyState onAdd={openModal} />
+            : protocols.map((p) => (
+                <ProtocolCard
+                  key={p.id}
+                  protocol={p}
+                  type="global"
+                  onDelete={handleDelete}
+                  isDeleting={deletingId === p.id}
+                />
+              ))}
       </div>
 
-      {/* Modal */}
-      <ProtocolFormModal
+      {/* Upload modal */}
+      <ProtocolUploadModal
         isOpen={modalOpen}
-        onClose={closeModal}
-        onSubmit={handleCreate}
-        isSubmitting={isCreating}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleUpload}
+        isSubmitting={isUploading}
+        title="Upload Global Protocol PDF"
       />
     </div>
   )
