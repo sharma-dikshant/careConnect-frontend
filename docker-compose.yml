@@ -1,0 +1,105 @@
+version: "3.8"
+
+services:
+  # ---------- Backend DB ----------
+  postgres:
+    image: postgres:15
+    container_name: dev-postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-dikshant}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-care_connect}
+    ports:
+      - "5434:5432"
+    volumes:
+      - backend_db:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  # ---------- AI DB ----------
+  rag-db:
+    image: pgvector/pgvector:pg16
+    container_name: dev-rag-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ragdb}
+    ports:
+      - "5436:5432"
+    volumes:
+      - rag_db:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  # ---------- Backend ----------
+  backend:
+    image: dikshant04/careconnect-backend:latest
+    container_name: dev-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../backend/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-dikshant}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-care_connect}
+    depends_on:
+      - postgres
+    networks:
+      - dev-network
+
+  # ---------- AI Server ----------
+  ai-server:
+    image: dikshant04/careconnect-ai:latest
+    container_name: dev-ai
+    ports:
+      - "8080:8000"
+    env_file:
+      - ../rag-server/.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ragdb}
+      DATABASE_HOST: rag-db
+      DATABASE_PORT: 5432
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      - rag-db
+    networks:
+      - dev-network
+
+  # ---------- Frontend (DEV MODE) ----------
+  frontend:
+    build:
+      context: .
+    container_name: frontend-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./:/app:cached
+      - /app/node_modules
+    env_file:
+      - ./.env
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://backend:3000}
+    command: npm run dev
+    depends_on:
+      - backend
+      - ai-server
+    networks:
+      - dev-network
+
+# ---------- Volumes ----------
+volumes:
+  backend_db:
+  rag_db:
+
+# ---------- Network ----------
+networks:
+  dev-network:
+    driver: bridge
