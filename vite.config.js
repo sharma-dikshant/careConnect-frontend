@@ -8,6 +8,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true,
+    allowedHosts: ['pamela-xylic-na.ngrok-free.dev']
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
