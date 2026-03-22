@@ -105,9 +105,22 @@
     animation: fade-in 0.25s ease-out both;
   }
 
+  /* Tab panel fade-in */
+  .animate-fade-in {
+    animation: fade-in 0.18s ease-out both;
+  }
+
   /* Sidebar transition */
   .sidebar-transition {
     @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Hide scrollbar (used for horizontally scrollable tabs) */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   /* Glassmorphism card */

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -25,7 +26,8 @@ function CardSkeleton() {
 }
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
-function EmptyState({ onCreateClick }) {
+function EmptyState({ isActive, onCreateClick }) {
+  const isDoctor = typeof onCreateClick === 'function'
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
@@ -44,20 +46,40 @@ function EmptyState({ onCreateClick }) {
         </svg>
       </div>
       <div>
-        <p className="font-semibold text-foreground">No appointments yet</p>
+        <p className="font-semibold text-foreground">
+          {isActive ? 'No active appointments' : 'No past appointments'}
+        </p>
         <p className="text-sm text-muted-foreground mt-1">
-          Create your first appointment to get started.
+          {isActive
+            ? isDoctor
+              ? 'Create your first appointment to get started.'
+              : 'Your doctor will add you to an appointment.'
+            : 'Past or closed appointments will appear here.'}
         </p>
       </div>
-      <Button size="sm" onClick={onCreateClick}>
-        Create Appointment
-      </Button>
+      {isActive && isDoctor && (
+        <Button size="sm" onClick={onCreateClick}>
+          Create Appointment
+        </Button>
+      )}
     </div>
   )
 }
 
-// ─── Desktop Table ────────────────────────────────────────────────────────────
-function AppointmentTable({ appointments, onEdit, onDelete, isDeletingId }) {
+// ─── Desktop Table (Doctor) ───────────────────────────────────────────────────
+/**
+ * Desktop table for doctor's appointment list.
+ * Pass onEdit/onDelete as undefined to render in read-only (inactive) mode.
+ */
+export const AppointmentTable = memo(function AppointmentTable({
+  appointments,
+  isActive = true,
+  onEdit,
+  onDelete,
+  isDeletingId,
+}) {
+  const showActions = isActive && (onEdit || onDelete)
+
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-white">
       <table className="w-full text-sm" aria-label="Appointments table">
@@ -68,7 +90,9 @@ function AppointmentTable({ appointments, onEdit, onDelete, isDeletingId }) {
             <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Description</th>
             <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Created</th>
             <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Status</th>
-            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">Actions</th>
+            {showActions && (
+              <th className="px-4 py-3 text-right font-semibold text-muted-foreground">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -111,111 +135,141 @@ function AppointmentTable({ appointments, onEdit, onDelete, isDeletingId }) {
 
               {/* Status */}
               <td className="px-4 py-3">
-                <Badge variant="doctor">Active</Badge>
+                <Badge variant={isActive ? 'doctor' : 'inactive'}>
+                  {isActive ? 'Active' : 'Past'}
+                </Badge>
               </td>
 
-              {/* Actions */}
-              <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-primary"
-                    onClick={() => onEdit(apt)}
-                    aria-label={`Edit ${apt.title}`}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => onDelete(apt.id)}
-                    disabled={isDeletingId === apt.id}
-                    aria-label={`Delete ${apt.title}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </td>
+              {/* Actions — only for active tab, doctor only */}
+              {showActions && (
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onEdit && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => onEdit(apt)}
+                        aria-label={`Edit ${apt.title}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => onDelete(apt.id)}
+                        disabled={isDeletingId === apt.id}
+                        aria-label={`Delete ${apt.title}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   )
-}
+})
 
 // ─── Mobile Card Grid ─────────────────────────────────────────────────────────
-function AppointmentCardGrid({ appointments, onEdit, onDelete, isDeletingId }) {
+const AppointmentCardGrid = memo(function AppointmentCardGrid({
+  appointments,
+  role,
+  isActive,
+  onEdit,
+  onDelete,
+  isDeletingId,
+}) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {appointments.map((apt) => (
         <AppointmentCard
           key={apt.id}
           appointment={apt}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          role={role}
+          isActive={isActive}
+          onEdit={isActive ? onEdit : undefined}
+          onDelete={isActive ? onDelete : undefined}
           isDeleting={isDeletingId === apt.id}
         />
       ))}
     </div>
   )
-}
+})
 
 // ─── Main exported component ──────────────────────────────────────────────────
 /**
  * Responsive appointment list.
- * Shows a table on desktop (md+) and cards on mobile.
+ * - Doctor: table on desktop, cards on mobile. Edit/delete only for active tab.
+ * - Patient: cards always (no table). Read-only.
  *
  * Props:
  *  - appointments: array
  *  - isLoading: boolean
  *  - error: Error | null
- *  - onEdit: (appointment) => void
- *  - onDelete: (id) => void
+ *  - role: 'doctor' | 'patient'
+ *  - isActive: boolean              — which tab is being rendered
+ *  - onEdit: (apt) => void          — doctor + active only
+ *  - onDelete: (id) => void         — doctor + active only
  *  - isDeletingId: number | null
- *  - onCreateClick: () => void  — used by empty state CTA
+ *  - onCreateClick: () => void      — used by doctor empty state CTA
  */
-export function AppointmentList({
+export const AppointmentList = memo(function AppointmentList({
   appointments = [],
   isLoading = false,
   error = null,
+  role = 'patient',
+  isActive = true,
   onEdit,
   onDelete,
   isDeletingId = null,
   onCreateClick,
 }) {
-  // Loading
+  const isDoctor = role === 'doctor'
+
+  // Loading skeleton
   if (isLoading) {
     return (
       <>
-        {/* Desktop skeleton */}
-        <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                {['Title', 'Patient', 'Description', 'Created', 'Status', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left">
-                    <Skeleton className="h-4 w-20 rounded" />
-                  </th>
+        {/* Desktop skeleton (doctor only) */}
+        {isDoctor && (
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-white">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/40">
+                  {['Title', 'Patient', 'Description', 'Created', 'Status', 'Actions'].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left">
+                      <Skeleton className="h-4 w-20 rounded" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[...Array(5)].map((_, i) => (
+                  <TableRowSkeleton key={i} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)}
-            </tbody>
-          </table>
-        </div>
-        {/* Mobile skeleton */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:hidden">
-          {[...Array(4)].map((_, i) => <CardSkeleton key={i} />)}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {/* Mobile / patient card skeleton */}
+        <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${isDoctor ? 'md:hidden' : ''}`}>
+          {[...Array(4)].map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       </>
     )
   }
 
-  // Error
+  // Error state
   if (error) {
     return (
       <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
@@ -225,23 +279,38 @@ export function AppointmentList({
     )
   }
 
-  // Empty
+  // Empty state
   if (appointments.length === 0) {
-    return <EmptyState onCreateClick={onCreateClick} />
+    return (
+      <EmptyState
+        isActive={isActive}
+        onCreateClick={isDoctor ? onCreateClick : undefined}
+      />
+    )
   }
 
-  const sharedProps = { appointments, onEdit, onDelete, isDeletingId }
+  const sharedCardProps = { appointments, role, isActive, onEdit, onDelete, isDeletingId }
 
-  return (
-    <>
-      {/* Desktop: table */}
-      <div className="hidden md:block">
-        <AppointmentTable {...sharedProps} />
-      </div>
-      {/* Mobile: cards */}
-      <div className="md:hidden">
-        <AppointmentCardGrid {...sharedProps} />
-      </div>
-    </>
-  )
-}
+  // Doctor: table on desktop, cards on mobile
+  if (isDoctor) {
+    return (
+      <>
+        <div className="hidden md:block">
+          <AppointmentTable
+            appointments={appointments}
+            isActive={isActive}
+            onEdit={isActive ? onEdit : undefined}
+            onDelete={isActive ? onDelete : undefined}
+            isDeletingId={isDeletingId}
+          />
+        </div>
+        <div className="md:hidden">
+          <AppointmentCardGrid {...sharedCardProps} />
+        </div>
+      </>
+    )
+  }
+
+  // Patient: cards always
+  return <AppointmentCardGrid {...sharedCardProps} />
+})

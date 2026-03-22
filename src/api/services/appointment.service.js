@@ -3,7 +3,7 @@ import api from '@/api/axiosInstance'
 /**
  * Get all appointments for the current user.
  * Role is determined server-side from the JWT.
- * @param {{ page?: number, limit?: number }} params
+ * @param {{ page?: number, limit?: number, active?: boolean }} params
  */
 export async function getAppointments(params = {}) {
   const { data } = await api.get('/api/appointments', { params })
