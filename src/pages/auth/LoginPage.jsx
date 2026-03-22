@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, HeartPulse, Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { loginUser } from '@/api/services/auth.service'
@@ -12,6 +12,9 @@ import { ROLES, ROUTES } from '@/lib/constants'
 export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const registered = location.state?.registered ?? false
 
   const [form, setForm] = useState({ type: ROLES.PATIENT, email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -54,6 +57,16 @@ export function LoginPage() {
       </CardHeader>
 
       <CardContent>
+        {/* Post-signup success message */}
+        {registered && (
+          <div className="mb-4 flex items-center gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Account created! Please sign in to continue.
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Role toggle */}
           <div className="flex rounded-lg border border-border overflow-hidden" role="group" aria-label="Account type">

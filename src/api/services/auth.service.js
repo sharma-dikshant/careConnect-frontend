@@ -37,3 +37,12 @@ export async function logoutUser() {
   localStorage.removeItem(TOKEN_KEY)
   return data
 }
+
+/**
+ * Verify an OTP for a given email + type.
+ * @param {{ to: string, type: 'signup-patient'|'signup-doctor', otp: string }} body
+ */
+export async function verifyOtp(body) {
+  const { data } = await api.post('/otp/verify', body)
+  return data
+}
