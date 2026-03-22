@@ -1,103 +1,89 @@
-# CareConnect Doctor Dashboard
+# CareConnect Frontend
 
-A comprehensive React frontend for the CareConnect Doctor Dashboard built with Material UI and Vite. This dashboard allows doctors to manage patients, view chats, upload context files, and handle account/profile features.
+CareConnect is a modern healthcare platform frontend built with React, Vite, and Tailwind CSS. It provides dedicated portals for both doctors and patients, facilitating appointment scheduling, health record management, and secure communication.
 
-## 🚀 Features
+## 🌟 Key Features
 
-### Authentication
-- **Login/Logout**: Secure authentication with dummy JWT token simulation
-- **Signup**: User registration with form validation
-- **Protected Routes**: Automatic redirection for unauthenticated users
+### 👨‍⚕️ Doctor Portal (`/doctor/*`)
+- **Interactive Dashboard**: Quick metrics on today's appointments and pending tasks.
+- **Appointment Management**: View, track, and manage all upcoming and past patient visits.
+- **Patient Records & History**: Detailed view of patient interactions and history.
+- **Care Protocols**: Manage and standardized medical care protocols.
+- **Professional Profile**: Update specialization, credentials, and contact details.
 
-### Dashboard Layout
-- **Responsive Sidebar**: Navigation drawer with Material UI components
-- **Topbar**: Search functionality, notifications, and user profile menu
-- **Mobile-Friendly**: Responsive design for desktop and tablet devices
+### 🧑‍🤝‍🧑 Patient Portal (`/patient/*`)
+- **Health Dashboard**: Overview of upcoming appointments and recent health updates.
+- **Appointment Booking**: Browse available doctor slots and schedule visits.
+- **Personal Profile**: Manage personal information and basic health records.
 
-### Patient Management
-- **Patient List**: View all patients with search and filtering
-- **Add/Edit Patients**: CRUD operations for patient information
-- **Patient Details**: Comprehensive patient view with tabs
-- **Medical Records**: Track diagnosis, status, and visit history
+### 🔐 Authentication & Security
+- **Role-Based Access Control**: Distinct routing and UI features depending on the logged-in role (Doctor vs. Patient).
+- **Secure Registration**: Specific signup flows for different user types.
 
-### Chat & Communication
-- **Chat History**: View patient-doctor conversations
-- **Message Threads**: Organized chat interface with timestamps
-- **Real-time Updates**: Simulated chat functionality
+### 📱 General UI/UX
+- **Responsive Design**: Mobile-first approach ensuring usability across mobile devices, tablets, and desktop.
+- **Accessible Components**: Built with Radix UI to ensure semantic HTML and screen-reader support.
+- **Modern aesthetics**: Clean and professional interface using shadcn/ui and Tailwind CSS.
 
-### Context Management
-- **Global Context**: Upload and manage files shared across all patients
-- **Patient-Specific Files**: Individual patient context and medical records
-- **File Support**: PDF and CSV file uploads
-- **File Operations**: Upload, download, edit, and delete functionality
-
-### Notifications
-- **Alert System**: Emergency alerts, patient updates, and reminders
-- **Read/Unread Status**: Mark notifications as read or unread
-- **Category Organization**: Grouped by notification type
-- **Bulk Actions**: Mark all as read or clear all notifications
-
-### Profile Management
-- **Doctor Profile**: Comprehensive professional information
-- **Edit Profile**: Inline editing with form validation
-- **Professional Stats**: Experience, specialization, and credentials
-- **Contact Information**: Email, phone, and license details
+---
 
 ## 🛠️ Technology Stack
 
-- **Frontend Framework**: React 18 with Vite
-- **UI Library**: Material UI (MUI) v5
-- **Routing**: React Router v6
-- **State Management**: React Context API
-- **Styling**: Emotion (CSS-in-JS)
-- **Icons**: Material Icons
-- **Data Grid**: MUI X Data Grid
+- **Framework**: [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/)
+- **Routing**: [React Router v7](https://reactrouter.com/)
+- **Styling**: [Tailwind CSS v3](https://tailwindcss.com/)
+- **UI Architecture**: [shadcn/ui](https://ui.shadcn.com/) + [Radix UI primitives](https://www.radix-ui.com/)
+- **Data Fetching**: [React Query (v5)](https://tanstack.com/query/latest) + [Axios](https://axios-http.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-## 🎨 Design Features
-
-- **Medical Theme**: Professional medical color palette (blues, greens, whites)
-- **Responsive Layout**: Mobile-first design approach
-- **Material Design**: Google Material Design principles
-- **Accessibility**: ARIA labels and keyboard navigation support
-- **Dark/Light Mode Ready**: Theme system prepared for future enhancements
+---
 
 ## 📁 Project Structure
 
-```
-careConnect/
+```text
+careConnect-frontend/
+├── public/                  # Public assets (Favicon, etc.)
 ├── src/
+│   ├── api/                 # Axios clients and API route definitions
 │   ├── components/
-│   │   └── DashboardLayout.jsx      # Main layout with sidebar and topbar
-│   ├── contexts/
-│   │   └── AuthContext.jsx          # Authentication context
-│   ├── data/
-│   │   └── dummyData.js             # Mock data for development
+│   │   ├── appointments/    # Appointment scheduling/viewing UI
+│   │   ├── chat/            # Messaging interface components
+│   │   ├── layout/          # Application layouts (AppShell, AuthLayout)
+│   │   ├── protocols/       # Doctor protocol management UI
+│   │   └── ui/              # shadcn/ui reusable foundation components
+│   ├── context/             # Global React Context providers (Auth, Theme)
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utilities (tailwind-merge, constants, helpers)
 │   ├── pages/
-│   │   ├── Dashboard.jsx            # Main dashboard page
-│   │   ├── Login.jsx                # Authentication page
-│   │   ├── Signup.jsx               # Registration page
-│   │   ├── PatientDetails.jsx       # Individual patient view
-│   │   ├── GlobalContext.jsx        # Global file management
-│   │   ├── Notifications.jsx        # Notification center
-│   │   └── Profile.jsx              # User profile management
-│   ├── App.jsx                      # Main app component with routing
-│   └── main.jsx                     # Application entry point
-├── package.json                     # Dependencies and scripts
-└── README.md                        # Project documentation
+│   │   ├── auth/            # Login, Signup
+│   │   ├── doctor/          # Doctor-specific pages
+│   │   ├── patient/         # Patient-specific pages
+│   │   └── shared/          # Homepage, Not Found, Shared Profile
+│   ├── routes/              # Routing logic (AppRouter, ProtectedRoute)
+│   ├── App.jsx              # Main React Component
+│   ├── index.css            # Tailwind directives and global styles
+│   └── main.jsx             # Entry script
+├── docker-compose.yml       # Docker Compose dev/prod configuration
+├── Dockerfile               # Docker production build instructions
+├── package.json             # Project dependencies and script runner
+├── tailwind.config.js       # Tailwind theme configuration
+└── vite.config.js           # Vite build and dev-server configuration
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn package manager
+- **Node.js**: v18 or newer
+- **Package Manager**: npm, yarn, or bun (npm is used by default)
 
-### Installation
+### Local Setup
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd careConnect
+   cd careConnect-frontend
    ```
 
 2. **Install dependencies**
@@ -105,100 +91,56 @@ careConnect/
    npm install
    ```
 
-3. **Start development server**
+3. **Configure Environment Variables**
+   Create a `.env` file based on the example to point to your backend API.
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. **Open in browser**
-   Navigate to `http://localhost:5173`
-
-### Demo Credentials
-- **Email**: `doctor@careconnect.com`
-- **Password**: `password123`
-
-## 📱 Available Routes
-
-- `/` - Main Dashboard
-- `/login` - Authentication
-- `/signup` - User Registration
-- `/patient/:id` - Patient Details
-- `/global-context` - Global File Management
-- `/notifications` - Notification Center
-- `/profile` - User Profile
-
-## 🔧 Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Adding New Features
-
-1. **Create new components** in the `src/components/` directory
-2. **Add new pages** in the `src/pages/` directory
-3. **Update routing** in `src/App.jsx`
-4. **Add mock data** in `src/data/dummyData.js`
-
-### Styling Guidelines
-
-- Use Material UI components for consistency
-- Follow the established color palette
-- Implement responsive design patterns
-- Use the theme system for customization
-
-## 🌟 Key Features Implementation
-
-### Authentication Flow
-- Context-based state management
-- LocalStorage for token persistence
-- Protected route components
-- Automatic redirects
-
-### Data Management
-- Dummy data simulation
-- Local state management
-- CRUD operations
-- File upload handling
-
-### Responsive Design
-- Mobile-first approach
-- Breakpoint-based layouts
-- Touch-friendly interactions
-- Adaptive navigation
-
-## 🔮 Future Enhancements
-
-- **Real-time Chat**: WebSocket integration
-- **File Storage**: Backend API integration
-- **User Management**: Role-based access control
-- **Analytics Dashboard**: Patient statistics and reports
-- **Mobile App**: React Native version
-- **Dark Mode**: Theme switching capability
-- **Internationalization**: Multi-language support
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
+5. **Access the application**
+   Open your browser and navigate to `http://localhost:5173`
 
 ---
 
-**Built with ❤️ for the medical community**
+## 🐳 Docker Setup
+
+You can fully run the frontend inside a Docker container using Docker Compose:
+
+1. **Start the containers in detached mode**
+   ```bash
+   docker-compose up -d
+   ```
+2. **Stop the containers**
+   ```bash
+   docker-compose down
+   ```
+
+---
+
+## 📜 Available Scripts
+
+- `npm run dev` - Starts the Vite development server with HMR.
+- `npm run build` - Builds the application into the `dist` directory for production.
+- `npm run preview` - Locally preview the production build.
+- `npm run lint` - Lints the codebase using ESLint to catch errors and enforce code style.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+This project is proprietary and confidential. Standard MIT guidelines do not apply unless explicitly provided in a `LICENSE` file.
