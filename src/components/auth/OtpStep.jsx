@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Loader2, Mail, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
 const OTP_LENGTH = 6
+const RESEND_COOLDOWN = 30 // seconds
 
 /**
  * OtpStep – 6-digit OTP verification UI.
@@ -19,6 +20,31 @@ export function OtpStep({ email, isLoading, error, onVerify, onResend, isResendi
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(''))
   const inputsRef = useRef([])
 
+  // ── Resend cooldown timer ─────────────────────────────────────────────────
+  const [cooldown, setCooldown] = useState(RESEND_COOLDOWN)
+  const timerRef = useRef(null)
+
+  function startCooldown() {
+    setCooldown(RESEND_COOLDOWN)
+    clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  // Start timer on mount
+  useEffect(() => {
+    startCooldown()
+    return () => clearInterval(timerRef.current)
+  }, [])
+
+  // ── OTP input handlers ────────────────────────────────────────────────────
   function handleChange(e, index) {
     const val = e.target.value.replace(/\D/g, '').slice(-1)
     const next = [...digits]
@@ -53,7 +79,15 @@ export function OtpStep({ email, isLoading, error, onVerify, onResend, isResendi
     onVerify(otp)
   }
 
+  function handleResendClick() {
+    setDigits(Array(OTP_LENGTH).fill(''))
+    inputsRef.current[0]?.focus()
+    onResend()
+    startCooldown()
+  }
+
   const isFilled = digits.every(Boolean)
+  const canResend = cooldown === 0 && !isResending && !isLoading
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -111,16 +145,16 @@ export function OtpStep({ email, isLoading, error, onVerify, onResend, isResendi
       <div className="text-center">
         <button
           type="button"
-          onClick={() => {
-            setDigits(Array(OTP_LENGTH).fill(''))
-            inputsRef.current[0]?.focus()
-            onResend()
-          }}
-          disabled={isResending || isLoading}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+          onClick={handleResendClick}
+          disabled={!canResend}
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCcw className={`w-3.5 h-3.5 ${isResending ? 'animate-spin' : ''}`} />
-          {isResending ? 'Sending…' : 'Resend code'}
+          {isResending
+            ? 'Sending…'
+            : cooldown > 0
+              ? `Resend in ${cooldown}s`
+              : 'Resend code'}
         </button>
       </div>
     </form>

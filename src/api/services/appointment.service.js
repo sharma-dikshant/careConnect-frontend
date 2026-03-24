@@ -11,11 +11,36 @@ export async function getAppointments(params = {}) {
 }
 
 /**
- * Create a new appointment. Doctor only.
+ * Initiate appointment creation (step 1 – sends OTP to patient). Doctor only.
  * @param {{ patientEmail: string, title: string, description?: string }} body
+ * @returns {{ message: string, data: { otpExpiry: number, entityId: string } }}
  */
-export async function createAppointment(body) {
-  const { data } = await api.post('/api/appointments', body)
+export async function initiateCreateAppointment(body) {
+  const { data } = await api.post('/api/appointments/initialize', body)
+  return data
+}
+
+/**
+ * Initiate appointment close/delete (step 1 – sends OTP to patient). Doctor only.
+ * @param {number} appointmentId
+ * @returns {{ message: string, data: { otpExpiry: number, entityId: string } }}
+ */
+export async function initiateDeleteAppointment(appointmentId) {
+  const { data } = await api.delete(`/api/appointments/${appointmentId}/initialize`)
+  return data
+}
+
+/**
+ * Confirm an appointment action (create or close) after OTP verification.
+ * @param {string} verifyToken – returned from POST /otp/verify
+ * @returns {{ message: string, data?: object }}
+ */
+export async function confirmAppointment(verifyToken) {
+  const { data } = await api.post(
+    '/api/appointments/confirm',
+    {},
+    { headers: { 'x-verify-token': verifyToken } },
+  )
   return data
 }
 
@@ -26,14 +51,5 @@ export async function createAppointment(body) {
  */
 export async function updateAppointment(appointmentId, body) {
   const { data } = await api.patch(`/api/appointments/${appointmentId}`, body)
-  return data
-}
-
-/**
- * Soft-delete an appointment (sets active = false). Doctor only.
- * @param {number} appointmentId
- */
-export async function deleteAppointment(appointmentId) {
-  const { data } = await api.delete(`/api/appointments/${appointmentId}`)
   return data
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signupPatient, verifyOtp } from '@/api/services/auth.service'
+import { signupPatient, verifyOtp, signupConfirm, resendOtp } from '@/api/services/auth.service'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -17,6 +17,7 @@ export function SignupPatientPage() {
 
   const [step, setStep] = useState(0)
   const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [entityId, setEntityId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState(null)
@@ -32,7 +33,8 @@ export function SignupPatientPage() {
     setIsLoading(true)
     setError(null)
     try {
-      await signupPatient(form)
+      const res = await signupPatient(form)
+      setEntityId(res.data.entityId)
       setStep(1)
     } catch (err) {
       setError(err.message)
@@ -41,12 +43,18 @@ export function SignupPatientPage() {
     }
   }
 
-  /* Step 2 – verify OTP */
+  /* Step 2 – verify OTP then confirm signup */
   async function handleOtpVerify(otp) {
     setIsLoading(true)
     setError(null)
     try {
-      await verifyOtp({ to: form.email, type: 'signup-patient', otp })
+      const verifyRes = await verifyOtp({
+        to: form.email,
+        type: 'signup-patient',
+        entityId,
+        otp,
+      })
+      await signupConfirm(verifyRes.data.verifyToken)
       navigate(ROUTES.LOGIN, { replace: true, state: { registered: true } })
     } catch (err) {
       setError(err.message)
@@ -55,12 +63,12 @@ export function SignupPatientPage() {
     }
   }
 
-  /* Resend OTP */
+  /* Resend OTP – uses /otp/send, not full signup again */
   async function handleResend() {
     setIsResending(true)
     setError(null)
     try {
-      await signupPatient(form)
+      await resendOtp({ to: form.email, type: 'signup-patient', entityId })
     } catch (err) {
       setError(err.message)
     } finally {

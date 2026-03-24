@@ -11,8 +11,9 @@ export async function loginUser(credentials) {
 }
 
 /**
- * Register a new doctor account.
+ * Register a new doctor account (step 1 – sends OTP).
  * @param {Object} body
+ * @returns {{ message: string, data: { otpExpiry: number, entityId: string } }}
  */
 export async function signupDoctor(body) {
   const { data } = await api.post('/api/auth/signup/doctor', body)
@@ -20,8 +21,9 @@ export async function signupDoctor(body) {
 }
 
 /**
- * Register a new patient account.
+ * Register a new patient account (step 1 – sends OTP).
  * @param {{ name: string, email: string, password: string }} body
+ * @returns {{ message: string, data: { otpExpiry: number, entityId: string } }}
  */
 export async function signupPatient(body) {
   const { data } = await api.post('/api/auth/signup/patient', body)
@@ -39,10 +41,33 @@ export async function logoutUser() {
 }
 
 /**
- * Verify an OTP for a given email + type.
- * @param {{ to: string, type: 'signup-patient'|'signup-doctor', otp: string }} body
+ * Verify an OTP for a given email + type + entityId.
+ * @param {{ to: string, type: string, entityId: string, otp: string }} body
+ * @returns {{ message: string, data: { verifyToken: string } }}
  */
 export async function verifyOtp(body) {
   const { data } = await api.post('/otp/verify', body)
+  return data
+}
+
+/**
+ * Resend OTP without re-submitting the full signup form.
+ * @param {{ to: string, type: string, entityId: string }} body
+ */
+export async function resendOtp(body) {
+  const { data } = await api.post('/otp/send', body)
+  return data
+}
+
+/**
+ * Confirm signup after successful OTP verification.
+ * @param {string} verifyToken – returned from verifyOtp
+ */
+export async function signupConfirm(verifyToken) {
+  const { data } = await api.post(
+    '/api/auth/signup/confirm',
+    {},
+    { headers: { 'x-verify-token': verifyToken } },
+  )
   return data
 }

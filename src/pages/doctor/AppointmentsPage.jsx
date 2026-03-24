@@ -2,44 +2,92 @@ import { useState, useCallback, memo } from 'react'
 import { Plus, RefreshCw } from 'lucide-react'
 import {
   useAppointments,
-  useCreateAppointment,
+  useInitiateCreateAppointment,
+  useInitiateDeleteAppointment,
+  useConfirmAppointmentOtp,
   useUpdateAppointment,
-  useDeleteAppointment,
 } from '@/hooks/useAppointments'
 import { AppointmentList } from '@/components/appointments/AppointmentList'
 import { AppointmentTabs } from '@/components/appointments/AppointmentTabs'
 import { AppointmentFormModal } from '@/components/appointments/AppointmentFormModal'
+import { OtpStep } from '@/components/auth/OtpStep'
 import { Button } from '@/components/ui/Button'
+import { resendOtp } from '@/api/services/auth.service'
 
-// ─── Delete Confirm Modal ─────────────────────────────────────────────────────
-const DeleteConfirmModal = memo(function DeleteConfirmModal({
+// ─── OTP Action Modal ───────────────────────────────────────────────────────
+/**
+ * Generic OTP modal used for both appointment create & close flows.
+ * Props:
+ *  isOpen        : boolean
+ *  title         : string
+ *  description   : string
+ *  patientEmail  : string
+ *  otpContext    : { to, type, entityId } | null
+ *  onConfirm     : (otp: string) => Promise<void>
+ *  onCancel      : () => void
+ *  isConfirming  : boolean
+ *  error         : string | null
+ */
+const AppointmentOtpModal = memo(function AppointmentOtpModal({
   isOpen,
-  appointmentTitle,
+  title,
+  description,
+  otpContext,
   onConfirm,
   onCancel,
-  isDeleting,
+  isConfirming,
+  error,
 }) {
-  if (!isOpen) return null
+  const [isResending, setIsResending] = useState(false)
+  const [resendError, setResendError] = useState(null)
+
+  async function handleResend() {
+    if (!otpContext) return
+    setIsResending(true)
+    setResendError(null)
+    try {
+      await resendOtp(otpContext)
+    } catch (err) {
+      setResendError(err.message)
+    } finally {
+      setIsResending(false)
+    }
+  }
+
+  if (!isOpen || !otpContext) return null
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal role="dialog">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={!isDeleting ? onCancel : undefined} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={!isConfirming ? onCancel : undefined}
+      />
       <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6 space-y-4 animate-fade-in">
+        {/* Header */}
         <div className="space-y-1">
-          <h2 className="text-base font-semibold">Delete Appointment</h2>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete{' '}
-            <span className="font-medium text-foreground">"{appointmentTitle}"</span>?
-            This action cannot be undone.
-          </p>
+          <h2 className="text-base font-semibold">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
-            {isDeleting ? 'Deleting…' : 'Yes, Delete'}
-          </Button>
-        </div>
+
+        {/* OTP Step */}
+        <OtpStep
+          email={otpContext.to}
+          isLoading={isConfirming}
+          error={error ?? resendError}
+          onVerify={onConfirm}
+          onResend={handleResend}
+          isResending={isResending}
+        />
+
+        {/* Cancel */}
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={onCancel}
+          disabled={isConfirming}
+        >
+          Cancel
+        </Button>
       </div>
     </div>
   )
@@ -65,65 +113,106 @@ export function DoctorAppointmentsPage() {
   // Tab state
   const [activeTab, setActiveTab] = useState('active')
 
-  // Modal state
-  const [modalOpen, setModalOpen] = useState(false)
+  // Create modal state
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+
+  // Edit modal state
   const [editingAppointment, setEditingAppointment] = useState(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
-  // Delete confirm state
-  const [deleteTarget, setDeleteTarget] = useState(null) // { id, title }
+  // OTP modal state – shared for both create and delete
+  const [otpModal, setOtpModal] = useState(null)
+  // otpModal shape:
+  //   { type: 'create'|'delete', title, description, otpContext: { to, type, entityId } }
+  const [otpError, setOtpError] = useState(null)
 
-  // ── Data hooks — separate cache per tab ────────────────────────────────────
+  // ── Data hooks — separate cache per tab ──────────────────────────────────
   const activeQuery = useAppointments({ active: true, limit: 50 })
   const inactiveQuery = useAppointments({ active: false, limit: 50 })
 
   const activeAppointments = activeQuery.data?.items ?? []
   const inactiveAppointments = inactiveQuery.data?.items ?? []
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-  const { mutateAsync: createApt, isPending: isCreating } = useCreateAppointment()
-  const { mutateAsync: deleteApt, isPending: isDeleting } = useDeleteAppointment()
+  // ── Mutations ─────────────────────────────────────────────────────────────
+  const { mutateAsync: initiateCreate, isPending: isInitiatingCreate } = useInitiateCreateAppointment()
+  const { mutateAsync: initiateDelete, isPending: isInitiatingDelete } = useInitiateDeleteAppointment()
+  const { mutateAsync: confirmOtp, isPending: isConfirming } = useConfirmAppointmentOtp()
   const updateMutation = useUpdateAppointment(editingAppointment?.id)
 
-  // ── Tab switch ────────────────────────────────────────────────────────────
-  const handleTabChange = useCallback((tab) => {
-    setActiveTab(tab)
-  }, [])
+  // ── Tab switch ───────────────────────────────────────────────────────────
+  const handleTabChange = useCallback((tab) => setActiveTab(tab), [])
 
-  // ── Modal handlers ─────────────────────────────────────────────────────────
-  const openCreateModal = useCallback(() => {
-    setEditingAppointment(null)
-    setModalOpen(true)
-  }, [])
+  // ── Create flow ──────────────────────────────────────────────────────────
+  const openCreateModal = useCallback(() => setCreateModalOpen(true), [])
+  const closeCreateModal = useCallback(() => setCreateModalOpen(false), [])
 
+  async function handleCreateFormSubmit(formData) {
+    // Step 1: initiate → OTP sent to patient
+    const res = await initiateCreate(formData)
+    closeCreateModal()
+
+    // Open OTP modal for the doctor to enter the OTP
+    setOtpError(null)
+    setOtpModal({
+      type: 'create',
+      title: 'Confirm Appointment Creation',
+      description: `An OTP has been sent to the patient's email. Ask the patient for the code.`,
+      otpContext: {
+        to: formData.patientEmail,
+        type: 'appointment-create',
+        entityId: res.data.entityId,
+      },
+    })
+  }
+
+  // ── Edit flow ────────────────────────────────────────────────────────────
   const openEditModal = useCallback((apt) => {
     setEditingAppointment(apt)
-    setModalOpen(true)
+    setEditModalOpen(true)
   }, [])
-
-  const closeModal = useCallback(() => {
-    setModalOpen(false)
+  const closeEditModal = useCallback(() => {
+    setEditModalOpen(false)
     setEditingAppointment(null)
   }, [])
 
-  async function handleFormSubmit(formData) {
-    if (editingAppointment) {
-      await updateMutation.mutateAsync(formData)
-    } else {
-      await createApt(formData)
-    }
-    closeModal()
+  async function handleEditFormSubmit(formData) {
+    await updateMutation.mutateAsync(formData)
+    closeEditModal()
   }
 
-  // ── Delete handlers ────────────────────────────────────────────────────────
-  function handleDeleteRequest(id) {
+  // ── Delete flow ──────────────────────────────────────────────────────────
+  async function handleDeleteRequest(id) {
     const apt = activeAppointments.find((a) => a.id === id)
-    setDeleteTarget({ id, title: apt?.title ?? `#${id}` })
+    // Step 1: initiate → OTP sent to patient
+    const res = await initiateDelete(id)
+
+    setOtpError(null)
+    setOtpModal({
+      type: 'delete',
+      title: 'Confirm Appointment Closure',
+      description: `An OTP has been sent to ${apt?.patient?.email ?? 'the patient'}. Ask the patient for the code to close this appointment.`,
+      otpContext: {
+        to: apt?.patient?.email ?? '',
+        type: 'appointment-close',
+        entityId: res.data.entityId,
+      },
+    })
   }
 
-  async function handleDeleteConfirm() {
-    if (!deleteTarget) return
-    await deleteApt(deleteTarget.id)
-    setDeleteTarget(null)
+  // ── OTP confirm ──────────────────────────────────────────────────────────
+  async function handleOtpConfirm(otp) {
+    setOtpError(null)
+    try {
+      await confirmOtp({ ...otpModal.otpContext, otp })
+      setOtpModal(null)
+    } catch (err) {
+      setOtpError(err.message)
+    }
+  }
+
+  function handleOtpCancel() {
+    setOtpModal(null)
+    setOtpError(null)
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -180,7 +269,7 @@ export function DoctorAppointmentsPage() {
           isActive={true}
           onEdit={openEditModal}
           onDelete={handleDeleteRequest}
-          isDeletingId={deleteTarget?.id ?? null}
+          isDeletingId={isInitiatingDelete ? 'pending' : null}
           onCreateClick={openCreateModal}
         />
       </TabPanel>
@@ -192,27 +281,38 @@ export function DoctorAppointmentsPage() {
           error={inactiveQuery.error}
           role="doctor"
           isActive={false}
-          // No onEdit / onDelete — inactive tab is read-only
           isDeletingId={null}
         />
       </TabPanel>
 
-      {/* Create / Edit Modal */}
+      {/* Create Appointment Form Modal */}
       <AppointmentFormModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        appointment={editingAppointment}
-        onSubmit={handleFormSubmit}
-        isSubmitting={isCreating || updateMutation.isPending}
+        isOpen={createModalOpen}
+        onClose={closeCreateModal}
+        appointment={null}
+        onSubmit={handleCreateFormSubmit}
+        isSubmitting={isInitiatingCreate}
       />
 
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={!!deleteTarget}
-        appointmentTitle={deleteTarget?.title}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-        isDeleting={isDeleting}
+      {/* Edit Appointment Form Modal */}
+      <AppointmentFormModal
+        isOpen={editModalOpen}
+        onClose={closeEditModal}
+        appointment={editingAppointment}
+        onSubmit={handleEditFormSubmit}
+        isSubmitting={updateMutation.isPending}
+      />
+
+      {/* OTP Confirmation Modal (create & delete) */}
+      <AppointmentOtpModal
+        isOpen={!!otpModal}
+        title={otpModal?.title}
+        description={otpModal?.description}
+        otpContext={otpModal?.otpContext}
+        onConfirm={handleOtpConfirm}
+        onCancel={handleOtpCancel}
+        isConfirming={isConfirming}
+        error={otpError}
       />
     </div>
   )
