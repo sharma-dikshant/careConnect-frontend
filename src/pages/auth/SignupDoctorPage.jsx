@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
-import { signupDoctor, verifyOtp } from '@/api/services/auth.service'
+import { signupDoctor, verifyOtp, signupConfirm, resendOtp } from '@/api/services/auth.service'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -36,6 +36,7 @@ export function SignupDoctorPage() {
 
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(Object.fromEntries(ALL_FIELDS.map((f) => [f.id, ''])))
+  const [entityId, setEntityId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState(null)
@@ -58,7 +59,8 @@ export function SignupDoctorPage() {
     setIsLoading(true)
     setError(null)
     try {
-      await signupDoctor({ ...form, experience: Number(form.experience) || undefined })
+      const res = await signupDoctor({ ...form, experience: Number(form.experience) || undefined })
+      setEntityId(res.data.entityId)
       setStep(2)
     } catch (err) {
       setError(err.message)
@@ -67,12 +69,18 @@ export function SignupDoctorPage() {
     }
   }
 
-  /* Step 3 – verify OTP */
+  /* Step 3 – verify OTP then confirm signup */
   async function handleOtpVerify(otp) {
     setIsLoading(true)
     setError(null)
     try {
-      await verifyOtp({ to: form.email, type: 'signup-doctor', otp })
+      const verifyRes = await verifyOtp({
+        to: form.email,
+        type: 'signup-doctor',
+        entityId,
+        otp,
+      })
+      await signupConfirm(verifyRes.data.verifyToken)
       navigate(ROUTES.LOGIN, { replace: true, state: { registered: true } })
     } catch (err) {
       setError(err.message)
@@ -81,12 +89,12 @@ export function SignupDoctorPage() {
     }
   }
 
-  /* Resend OTP */
+  /* Resend OTP – uses /otp/send, not full signup again */
   async function handleResend() {
     setIsResending(true)
     setError(null)
     try {
-      await signupDoctor({ ...form, experience: Number(form.experience) || undefined })
+      await resendOtp({ to: form.email, type: 'signup-doctor', entityId })
     } catch (err) {
       setError(err.message)
     } finally {

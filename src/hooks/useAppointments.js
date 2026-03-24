@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  createAppointment,
-  deleteAppointment,
+  initiateCreateAppointment,
+  initiateDeleteAppointment,
+  confirmAppointment,
   getAppointments,
   updateAppointment,
 } from '@/api/services/appointment.service'
+import { verifyOtp } from '@/api/services/auth.service'
 
 /**
  * Fetch appointments for the current user, filtered by active status.
@@ -21,21 +23,54 @@ export function useAppointments({ active, page = 1, limit = 20 } = {}) {
       const response = await getAppointments({ active, page, limit })
       return response?.data ?? { items: [], meta: {} }
     },
-    // Keep previous data while fetching new page / tab switch
     placeholderData: (prev) => prev,
-    staleTime: 1000 * 30, // 30 s — avoid refetch on tab switch if data is fresh
+    staleTime: 1000 * 30,
   })
 }
 
 /**
- * Create a new appointment (Doctor only).
- * Invalidates both active and inactive appointment lists on success.
+ * Initiate appointment creation (step 1 – sends OTP to patient). Doctor only.
+ * Returns { entityId, otpExpiry } on success so the caller can open an OTP modal.
  */
-export function useCreateAppointment() {
+export function useInitiateCreateAppointment() {
+  return useMutation({
+    mutationFn: initiateCreateAppointment,
+    // No cache invalidation here – the appointment isn't created yet
+  })
+}
+
+/**
+ * Initiate appointment deletion (step 1 – sends OTP to patient). Doctor only.
+ * Returns { entityId, otpExpiry } on success so the caller can open an OTP modal.
+ */
+export function useInitiateDeleteAppointment() {
+  return useMutation({
+    mutationFn: initiateDeleteAppointment,
+  })
+}
+
+/**
+ * Verify OTP + confirm an appointment action (create or close).
+ * Combines the /otp/verify call and /api/appointments/confirm call.
+ * Invalidates all appointment queries on success.
+ *
+ * @example
+ *   const { mutateAsync: completeAppointmentAction } = useConfirmAppointmentOtp()
+ *   await completeAppointmentAction({ to: patientEmail, type: 'appointment-create', entityId, otp })
+ */
+export function useConfirmAppointmentOtp() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createAppointment,
+    mutationFn: async ({ to, type, entityId, otp }) => {
+      // Step 1: verify OTP → get verifyToken
+      const verifyRes = await verifyOtp({ to, type, entityId, otp })
+      const verifyToken = verifyRes.data.verifyToken
+
+      // Step 2: confirm action
+      const result = await confirmAppointment(verifyToken)
+      return result
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] })
     },
@@ -54,22 +89,6 @@ export function useUpdateAppointment(appointmentId) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] })
       queryClient.invalidateQueries({ queryKey: ['appointment', appointmentId] })
-    },
-  })
-}
-
-/**
- * Soft-delete an appointment (Doctor only).
- * Invalidates both active and inactive appointment lists on success.
- */
-export function useDeleteAppointment() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: deleteAppointment,
-    onSuccess: () => {
-      // Invalidate both tabs — a deleted appointment moves from active → inactive
-      queryClient.invalidateQueries({ queryKey: ['appointments'] })
     },
   })
 }
