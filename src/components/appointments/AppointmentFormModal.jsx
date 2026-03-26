@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { PatientSearchInput } from '@/components/appointments/PatientSearchInput'
+import { ModalPortal } from '@/components/ui/ModalPortal'
 import { cn } from '@/lib/utils'
 
 /**
@@ -84,18 +85,19 @@ export function AppointmentFormModal({
   }
 
   return (
-    // Backdrop
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      aria-modal="true"
-      role="dialog"
-      aria-labelledby="modal-title"
-    >
-      {/* Dim backdrop */}
+    <ModalPortal>
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={!isSubmitting ? onClose : undefined}
-      />
+        className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+        aria-modal="true"
+        role="dialog"
+        aria-labelledby="modal-title"
+      >
+        {/* Dim backdrop */}
+        <div
+          className="absolute inset-0 bg-black/50"
+          onClick={!isSubmitting ? onClose : undefined}
+        />
 
       {/* Modal panel */}
       <div
@@ -204,6 +206,7 @@ export function AppointmentFormModal({
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   )
 }

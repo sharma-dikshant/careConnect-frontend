@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Upload, ClipboardList, RefreshCw } from 'lucide-react'
+import { Upload, ClipboardList, RefreshCw, Sparkles } from 'lucide-react'
 import {
   useGlobalProtocols,
   useUploadGlobalProtocol,
@@ -9,6 +9,7 @@ import { ProtocolCard } from '@/components/protocols/ProtocolCard'
 import { ProtocolUploadModal } from '@/components/protocols/ProtocolUploadModal'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { AI_Prescription_Modal } from '@/components/ai/AI_Prescription_Modal'
 
 function ProtocolSkeleton() {
   return (
@@ -53,6 +54,16 @@ export function DoctorProtocolsPage() {
   const [deletingId, setDeletingId] = useState(null)
   const [page] = useState(1)
 
+  // AI Prescription modal state
+  const [aiModalOpen, setAiModalOpen] = useState(false)
+  const openAiModal = useCallback(() => setAiModalOpen(true), [])
+  const closeAiModal = useCallback(() => setAiModalOpen(false), [])
+  const handleSavePrescriptionAsProtocol = useCallback((prescription) => {
+    // TODO: wire to backend PDF/protocol save endpoint when ready
+    console.info('[CareConnect] Prescription saved as protocol:', prescription)
+    closeAiModal()
+  }, [closeAiModal])
+
   const { data, isLoading, error, refetch } = useGlobalProtocols({ page, limit: 20 })
   const { mutateAsync: upload, isPending: isUploading } = useUploadGlobalProtocol()
   const { mutateAsync: remove } = useDeleteCareProtocol()
@@ -88,6 +99,17 @@ export function DoctorProtocolsPage() {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh">
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openAiModal}
+            id="ai-prescription-btn-protocol"
+            className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">Generate Prescription</span>
+            <span className="sm:hidden">AI Rx</span>
           </Button>
           <Button size="sm" onClick={openModal} id="upload-protocol-btn">
             <Upload className="h-4 w-4" />
@@ -134,6 +156,14 @@ export function DoctorProtocolsPage() {
         onSubmit={handleUpload}
         isSubmitting={isUploading}
         title="Upload Global Protocol PDF"
+      />
+
+      {/* AI Prescription Modal */}
+      <AI_Prescription_Modal
+        isOpen={aiModalOpen}
+        onClose={closeAiModal}
+        context="protocol"
+        onSaveAsProtocol={handleSavePrescriptionAsProtocol}
       />
     </div>
   )

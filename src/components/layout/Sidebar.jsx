@@ -77,7 +77,7 @@ export function Sidebar({ isOpen, onClose }) {
       {/* Mobile overlay backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[54] bg-black/40 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -86,7 +86,7 @@ export function Sidebar({ isOpen, onClose }) {
       {/* Sidebar panel */}
       <aside
         className={cn(
-          'fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r border-border bg-white',
+          'fixed left-0 top-16 z-[55] h-[calc(100vh-4rem)] w-64 border-r border-border bg-white',
           'flex flex-col sidebar-transition',
           // Mobile: slide in/out
           'lg:translate-x-0',

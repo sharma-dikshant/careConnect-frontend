@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from 'react'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, Sparkles } from 'lucide-react'
 import {
   useAppointments,
   useInitiateCreateAppointment,
@@ -12,7 +12,9 @@ import { AppointmentTabs } from '@/components/appointments/AppointmentTabs'
 import { AppointmentFormModal } from '@/components/appointments/AppointmentFormModal'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { Button } from '@/components/ui/Button'
+import { ModalPortal } from '@/components/ui/ModalPortal'
 import { resendOtp } from '@/api/services/auth.service'
+import { AI_Prescription_Modal } from '@/components/ai/AI_Prescription_Modal'
 
 // ─── OTP Action Modal ───────────────────────────────────────────────────────
 /**
@@ -57,39 +59,41 @@ const AppointmentOtpModal = memo(function AppointmentOtpModal({
   if (!isOpen || !otpContext) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal role="dialog">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={!isConfirming ? onCancel : undefined}
-      />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6 space-y-4 animate-fade-in">
-        {/* Header */}
-        <div className="space-y-1">
-          <h2 className="text-base font-semibold">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-
-        {/* OTP Step */}
-        <OtpStep
-          email={otpContext.to}
-          isLoading={isConfirming}
-          error={error ?? resendError}
-          onVerify={onConfirm}
-          onResend={handleResend}
-          isResending={isResending}
+    <ModalPortal>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" aria-modal role="dialog">
+        <div
+          className="absolute inset-0 bg-black/50"
+          onClick={!isConfirming ? onCancel : undefined}
         />
+        <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6 space-y-4 animate-fade-in">
+          {/* Header */}
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold">{title}</h2>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
 
-        {/* Cancel */}
-        <Button
-          variant="ghost"
-          className="w-full"
-          onClick={onCancel}
-          disabled={isConfirming}
-        >
-          Cancel
-        </Button>
+          {/* OTP Step */}
+          <OtpStep
+            email={otpContext.to}
+            isLoading={isConfirming}
+            error={error ?? resendError}
+            onVerify={onConfirm}
+            onResend={handleResend}
+            isResending={isResending}
+          />
+
+          {/* Cancel */}
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={onCancel}
+            disabled={isConfirming}
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   )
 })
 
@@ -125,6 +129,16 @@ export function DoctorAppointmentsPage() {
   // otpModal shape:
   //   { type: 'create'|'delete', title, description, otpContext: { to, type, entityId } }
   const [otpError, setOtpError] = useState(null)
+
+  // AI Prescription modal state
+  const [aiModalOpen, setAiModalOpen] = useState(false)
+  const openAiModal = useCallback(() => setAiModalOpen(true), [])
+  const closeAiModal = useCallback(() => setAiModalOpen(false), [])
+  const handleAttachPrescription = useCallback((prescription) => {
+    // TODO: wire to backend endpoint when ready
+    console.info('[CareConnect] Prescription attached to appointment:', prescription)
+    closeAiModal()
+  }, [closeAiModal])
 
   // ── Data hooks — separate cache per tab ──────────────────────────────────
   const activeQuery = useAppointments({ active: true, limit: 50 })
@@ -242,6 +256,17 @@ export function DoctorAppointmentsPage() {
             <RefreshCw className="h-4 w-4" />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openAiModal}
+            id="ai-prescription-btn-appointment"
+            className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">Generate Prescription</span>
+            <span className="sm:hidden">AI Rx</span>
+          </Button>
           <Button size="sm" onClick={openCreateModal} id="create-appointment-btn">
             <Plus className="h-4 w-4" />
             New Appointment
@@ -313,6 +338,14 @@ export function DoctorAppointmentsPage() {
         onCancel={handleOtpCancel}
         isConfirming={isConfirming}
         error={otpError}
+      />
+
+      {/* AI Prescription Modal */}
+      <AI_Prescription_Modal
+        isOpen={aiModalOpen}
+        onClose={closeAiModal}
+        context="appointment"
+        onAttachToAppointment={handleAttachPrescription}
       />
     </div>
   )

@@ -27,7 +27,7 @@ export function AppShell() {
     <div className="flex flex-col min-h-screen bg-brand-slate-50">
       <Navbar onMenuToggle={toggleSidebar} isSidebarOpen={sidebarOpen} />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
         <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
         {/* Main content area */}
