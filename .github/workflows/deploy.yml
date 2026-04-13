@@ -9,6 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # Inject env globally (cleaner)
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,12 +23,10 @@ jobs:
           node-version: 20
 
       - name: Install deps
-        run: npm install
+        run: npm i   
 
       - name: Build
         run: npm run build
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
       # Upload dist to EC2 (temporary location)
       - name: Upload build to EC2
@@ -36,7 +38,7 @@ jobs:
           source: "dist/*"
           target: "/home/ubuntu/frontend-temp"
 
-      # Move files to Nginx + restart
+      # Deploy
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -56,9 +58,9 @@ jobs:
             sudo chown -R www-data:www-data /usr/share/nginx/html
 
             echo "Reloading Nginx..."
-            sudo systemctl reload nginx
+            sudo systemctl restart nginx   # use restart not reload
 
             echo "Cleanup temp files..."
             rm -rf /home/ubuntu/frontend-temp
 
-            echo "✅ Deployment completed 🚀"
+            echo " Deployment completed 🚀"
