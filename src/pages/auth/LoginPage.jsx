@@ -28,6 +28,18 @@ export function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+
+    // Frontend Validation
+    if (!form.email || !form.email.includes('@') || !form.email.includes('.')) {
+      setError('Please enter a valid email address.')
+      return
+    }
+
+    if (!form.password || form.password.length < 6) {
+      setError('Password must be at least 6 characters long.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     try {
@@ -75,11 +87,10 @@ export function LoginPage() {
                 key={r}
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, type: r }))}
-                className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${
-                  form.type === r
+                className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${form.type === r
                     ? 'bg-primary text-white'
                     : 'bg-background text-muted-foreground hover:bg-muted'
-                }`}
+                  }`}
               >
                 {r}
               </button>

@@ -110,6 +110,7 @@ export function ProfilePage() {
                     type={type}
                     value={form[id]}
                     onChange={handleChange}
+                    required
                   />
                 </div>
               ))}

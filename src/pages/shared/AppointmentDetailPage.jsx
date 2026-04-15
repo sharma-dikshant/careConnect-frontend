@@ -97,7 +97,7 @@ export function AppointmentDetailPage() {
      *  - Flex-1 scrollable ChatContainer
      *  - Sticky bottom input / read-only bar
      */
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-2xl">
+    <div className="flex flex-col h-[calc(100vh-7rem)] max-w-2xl">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <div className="shrink-0 flex items-center gap-2 px-2 py-2 bg-white border-b border-border">
         <Button
@@ -195,7 +195,7 @@ export function AppointmentDetailPage() {
       </div>
 
       {/* ── Chat messages ────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-hidden bg-brand-slate-50/50">
+      <div className="flex-1 overflow-hidden bg-brand-slate-50/50 flex flex-col">
         <ChatContainer
           messages={messages}
           isLoading={isLoading}
