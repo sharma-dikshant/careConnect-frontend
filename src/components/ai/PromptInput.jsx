@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 const MAX_CHARS = 600
 
 /**
- * Left-panel prompt input area for the AI prescription modal.
+ * Left-panel prompt input area for the AI patient guide modal.
  *
  * Props:
  *  value        – string
@@ -43,28 +43,8 @@ export function PromptInput({ value, onChange, onGenerate, isLoading, hasResult 
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">Describe Symptoms</p>
-          <p className="text-xs text-muted-foreground">AI will generate a structured prescription</p>
+          <p className="text-xs text-muted-foreground">AI will generate a patient guide</p>
         </div>
-      </div>
-
-      {/* Example prompts */}
-      <div className="flex flex-wrap gap-1.5">
-        {[
-          'Fever & headache, 2 days',
-          'Mild cough, sore throat',
-          'Seasonal allergies',
-          'Type 2 diabetes review',
-        ].map((eg) => (
-          <button
-            key={eg}
-            type="button"
-            onClick={() => onChange(eg)}
-            className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground hover:bg-border transition-colors"
-            tabIndex={0}
-          >
-            {eg}
-          </button>
-        ))}
       </div>
 
       {/* Textarea */}
@@ -106,11 +86,12 @@ export function PromptInput({ value, onChange, onGenerate, isLoading, hasResult 
         disabled={isLoading || !value.trim() || isOverLimit}
         className="w-full gap-2"
         size="lg"
-        aria-label={hasResult ? 'Regenerate prescription' : 'Generate prescription'}
+        aria-label={hasResult ? 'Regenerate patient guide' : 'Generate patient guide'}
       >
         <Send className="h-4 w-4" />
-        {hasResult ? 'Regenerate' : 'Generate Prescription'}
+        {hasResult ? 'Regenerate' : 'Generate Patient Guide'}
       </Button>
     </div>
   )
 }
+

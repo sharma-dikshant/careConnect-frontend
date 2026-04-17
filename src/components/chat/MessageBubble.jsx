@@ -1,5 +1,6 @@
 import { Bot, User, Stethoscope } from 'lucide-react'
 import { cn, formatDateTime } from '@/lib/utils'
+import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer'
 
 /**
  * Sender configuration: maps sender key → visual identity
@@ -86,7 +87,11 @@ export function MessageBubble({ message, viewerRole }) {
             message._optimistic && 'opacity-75',
           )}
         >
-          {message.message}
+          {sender === 'bot' || sender === 'doctor' ? (
+            <MarkdownRenderer>{message.message}</MarkdownRenderer>
+          ) : (
+            message.message
+          )}
         </div>
 
         {/* Timestamp + status */}

@@ -1,15 +1,15 @@
-import { useCallback, useState } from 'react'
-import { Upload, ClipboardList, RefreshCw, Sparkles } from 'lucide-react'
+import { useCallback, useState } from "react";
+import { Upload, ClipboardList, RefreshCw, Sparkles } from "lucide-react";
 import {
   useGlobalProtocols,
   useUploadGlobalProtocol,
   useDeleteCareProtocol,
-} from '@/hooks/useCareProtocols'
-import { ProtocolCard } from '@/components/protocols/ProtocolCard'
-import { ProtocolUploadModal } from '@/components/protocols/ProtocolUploadModal'
-import { Button } from '@/components/ui/Button'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { AI_Prescription_Modal } from '@/components/ai/AI_Prescription_Modal'
+} from "@/hooks/useCareProtocols";
+import { ProtocolCard } from "@/components/protocols/ProtocolCard";
+import { ProtocolUploadModal } from "@/components/protocols/ProtocolUploadModal";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { AI_PatientGuide_Modal } from "@/components/ai/AI_PatientGuide_Modal";
 
 function ProtocolSkeleton() {
   return (
@@ -26,7 +26,7 @@ function ProtocolSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function EmptyState({ onAdd }) {
@@ -46,42 +46,55 @@ function EmptyState({ onAdd }) {
         Upload PDF
       </Button>
     </div>
-  )
+  );
 }
 
 export function DoctorProtocolsPage() {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [deletingId, setDeletingId] = useState(null)
-  const [page] = useState(1)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [page] = useState(1);
 
-  // AI Prescription modal state
-  const [aiModalOpen, setAiModalOpen] = useState(false)
-  const openAiModal = useCallback(() => setAiModalOpen(true), [])
-  const closeAiModal = useCallback(() => setAiModalOpen(false), [])
-  const handleSavePrescriptionAsProtocol = useCallback((prescription) => {
-    // TODO: wire to backend PDF/protocol save endpoint when ready
-    console.info('[CareConnect] Prescription saved as protocol:', prescription)
-    closeAiModal()
-  }, [closeAiModal])
+  // AI Patient Guide modal state
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const openAiModal = useCallback(() => setAiModalOpen(true), []);
+  const closeAiModal = useCallback(() => setAiModalOpen(false), []);
+  const handleSavePatientGuideAsProtocol = useCallback(
+    (patientGuide) => {
+      // TODO: wire to backend PDF/protocol save endpoint when ready
+      console.info(
+        "[CareConnect] Patient guide saved as protocol:",
+        patientGuide,
+      );
+      closeAiModal();
+    },
+    [closeAiModal],
+  );
 
-  const { data, isLoading, error, refetch } = useGlobalProtocols({ page, limit: 20 })
-  const { mutateAsync: upload, isPending: isUploading } = useUploadGlobalProtocol()
-  const { mutateAsync: remove } = useDeleteCareProtocol()
+  const { data, isLoading, error, refetch } = useGlobalProtocols({
+    page,
+    limit: 20,
+  });
+  const { mutateAsync: upload, isPending: isUploading } =
+    useUploadGlobalProtocol();
+  const { mutateAsync: remove } = useDeleteCareProtocol();
 
-  const protocols = data?.items ?? []
-  const total = data?.meta?.total ?? 0
+  const protocols = data?.items ?? [];
+  const total = data?.meta?.total ?? 0;
 
-  const openModal = useCallback(() => setModalOpen(true), [])
+  const openModal = useCallback(() => setModalOpen(true), []);
 
   async function handleUpload(file) {
-    await upload(file)
-    setModalOpen(false)
+    await upload(file);
+    setModalOpen(false);
   }
 
   async function handleDelete(id) {
-    setDeletingId(id)
-    try { await remove(id) }
-    finally { setDeletingId(null) }
+    setDeletingId(id);
+    try {
+      await remove(id);
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -92,24 +105,29 @@ export function DoctorProtocolsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Care Protocols</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             {isLoading
-              ? 'Loading…'
-              : `${total} global protocol${total !== 1 ? 's' : ''} in your library`}
+              ? "Loading…"
+              : `${total} global protocol${total !== 1 ? "s" : ""} in your library`}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            aria-label="Refresh"
+          >
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={openAiModal}
-            id="ai-prescription-btn-protocol"
+            id="ai-patient-guide-btn-protocol"
             className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
           >
             <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">Generate Prescription</span>
-            <span className="sm:hidden">AI Rx</span>
+            <span className="hidden sm:inline">Generate Patient Guide</span>
+            <span className="sm:hidden">AI Guide</span>
           </Button>
           <Button size="sm" onClick={openModal} id="upload-protocol-btn">
             <Upload className="h-4 w-4" />
@@ -120,9 +138,10 @@ export function DoctorProtocolsPage() {
 
       {/* Info callout */}
       <div className="rounded-xl bg-brand-blue-50 border border-brand-blue-200 px-4 py-3 text-sm text-brand-blue-800">
-        <strong>Global protocols</strong> are your personal PDF library. They are automatically
-        visible to patients in every appointment you create.
-        Upload appointment-specific PDFs from within an appointment's detail page.
+        <strong>Global protocols</strong> are your personal PDF library. They
+        are automatically visible to patients in every appointment you create.
+        Upload appointment-specific PDFs from within an appointment's detail
+        page.
       </div>
 
       {/* Error */}
@@ -134,19 +153,21 @@ export function DoctorProtocolsPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isLoading
-          ? [...Array(3)].map((_, i) => <ProtocolSkeleton key={i} />)
-          : protocols.length === 0
-            ? <EmptyState onAdd={openModal} />
-            : protocols.map((p) => (
-                <ProtocolCard
-                  key={p.id}
-                  protocol={p}
-                  type="global"
-                  onDelete={handleDelete}
-                  isDeleting={deletingId === p.id}
-                />
-              ))}
+        {isLoading ? (
+          [...Array(3)].map((_, i) => <ProtocolSkeleton key={i} />)
+        ) : protocols.length === 0 ? (
+          <EmptyState onAdd={openModal} />
+        ) : (
+          protocols.map((p) => (
+            <ProtocolCard
+              key={p.id}
+              protocol={p}
+              type="global"
+              onDelete={handleDelete}
+              isDeleting={deletingId === p.id}
+            />
+          ))
+        )}
       </div>
 
       {/* Upload modal */}
@@ -158,13 +179,13 @@ export function DoctorProtocolsPage() {
         title="Upload Global Protocol PDF"
       />
 
-      {/* AI Prescription Modal */}
-      <AI_Prescription_Modal
+      {/* AI Patient Guide Modal */}
+      <AI_PatientGuide_Modal
         isOpen={aiModalOpen}
         onClose={closeAiModal}
         context="protocol"
-        onSaveAsProtocol={handleSavePrescriptionAsProtocol}
+        onSaveAsProtocol={handleSavePatientGuideAsProtocol}
       />
     </div>
-  )
+  );
 }
