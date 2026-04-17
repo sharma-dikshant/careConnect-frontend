@@ -181,7 +181,7 @@ export function AI_PatientGuide_Modal({
           className={cn(
             "relative z-10 w-full max-w-[1100px] rounded-2xl bg-background shadow-2xl",
             "flex flex-col animate-fade-in",
-            "max-h-[90vh]",
+            "h-[90vh]",
           )}
           style={{ width: "min(95vw, 1100px)" }}
         >
@@ -348,7 +348,7 @@ export function AI_PatientGuide_Modal({
                   variant="outline"
                   size="sm"
                   onClick={handleDownload}
-                  disabled={isSaving || isEditMode}
+                  disabled={isSaving}
                   className="gap-2"
                   id="ai-download-btn"
                 >

@@ -1,8 +1,8 @@
-import { useRef } from 'react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { AlertCircle, RefreshCw, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer'
+import { cn } from '@/lib/utils'
 
 // ─── Loading skeleton with typing dots ────────────────────────────────────────
 function LoadingSkeleton() {
@@ -68,10 +68,22 @@ function ErrorState({ message, onRetry }) {
   )
 }
 
+// ─── Patient guide page styles ───────────────────────────────────────────────
+const GUIDE_PAGE_CLASS = cn(
+  '[&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-center [&_h1]:pb-3',
+  '[&_h2]:text-[15px] [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h2]:border-b [&_h2]:border-border/50 [&_h2]:pb-1.5',
+  '[&_blockquote]:rounded-lg [&_blockquote]:bg-primary/5 [&_blockquote]:py-2 [&_blockquote]:pr-3',
+  '[&_li]:marker:text-primary/60',
+  '[&_strong]:text-foreground',
+)
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 /**
  * Right-panel that shows loading skeleton, error, empty prompt, or the rendered markdown result.
+ *
+ * The preview div (contentRef) is always mounted when markdown exists so that
+ * PDF generation via html2pdf.js can capture it even during edit mode.
  *
  * Props:
  *  isLoading       – boolean
@@ -97,34 +109,50 @@ export function AIResponseView({
   if (error) return <ErrorState message={error} onRetry={onRetry} />
   if (!markdown) return <EmptyState />
 
+  const displayMarkdown = editedMarkdown || markdown
+
   return (
     <div className="flex flex-col h-full gap-3 animate-fade-in">
       {/* Result header */}
-      <div className="flex items-center gap-2 rounded-xl bg-accent border border-accent px-3.5 py-2">
+      <div className="flex items-center gap-2 rounded-xl bg-accent border border-accent px-3.5 py-2 shrink-0">
         <span className="text-sm font-medium text-accent-foreground">
           ✅ Patient guide generated — review{isEditMode ? ' and edit' : ''} below before saving
         </span>
       </div>
 
-      {isEditMode ? (
-        /* Edit mode: raw textarea */
+      {/* Edit mode: raw textarea — fills the remaining space */}
+      {isEditMode && (
         <textarea
           id="ai-markdown-editor"
           value={editedMarkdown}
           onChange={(e) => onEditChange(e.target.value)}
-          className="flex-1 w-full resize-none rounded-xl border border-input bg-background p-4 text-sm font-mono leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[320px]"
+          className="flex-1 w-full resize-none rounded-xl border border-input bg-background p-4 text-sm font-mono leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Edit patient guide markdown"
           spellCheck={false}
         />
-      ) : (
-        /* Preview mode: rendered markdown */
+      )}
+
+      {/* PDF-style preview: always mounted for PDF capture, hidden off-screen during edit */}
+      <div
+        className={cn(
+          isEditMode
+            ? 'fixed left-[-9999px] top-0 w-[800px]'
+            : 'flex-1 min-h-0 overflow-y-auto scrollbar-thin rounded-xl bg-neutral-100 dark:bg-neutral-800/50 p-4 md:p-6',
+        )}
+      >
+        {/* White "page" — this is what html2pdf captures */}
         <div
           ref={contentRef}
-          className="flex-1 overflow-y-auto scrollbar-thin rounded-xl border border-border bg-white/60 p-4 min-h-[320px]"
+          className={cn(
+            'bg-white shadow-lg mx-auto py-8 px-8 md:py-10 md:px-10',
+            !isEditMode && 'max-w-[680px] rounded-sm border border-neutral-200',
+          )}
         >
-          <MarkdownRenderer>{isEditMode ? editedMarkdown : markdown}</MarkdownRenderer>
+          <MarkdownRenderer className={GUIDE_PAGE_CLASS}>
+            {displayMarkdown}
+          </MarkdownRenderer>
         </div>
-      )}
+      </div>
     </div>
   )
 }
