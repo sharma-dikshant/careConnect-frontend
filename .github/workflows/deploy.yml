@@ -9,6 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # Inject env globally (cleaner)
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,14 +23,12 @@ jobs:
           node-version: 20
 
       - name: Install deps
-        run: npm install
+        run: npm i   
 
       - name: Build
         run: npm run build
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Copy dist to EC2
+      # Upload dist to EC2 (temporary location)
       - name: Upload build to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -34,10 +36,10 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           source: "dist/*"
-          target: "/home/ubuntu/server/careConnect-frontend"
+          target: "/home/ubuntu/frontend-temp"
 
-      # Restart PM2
-      - name: Restart server
+      # Deploy
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -46,12 +48,19 @@ jobs:
           script: |
             set -e
 
-            cd /home/ubuntu/server/careConnect-frontend
+            echo "Cleaning old frontend..."
+            sudo rm -rf /usr/share/nginx/html/*
 
-            echo "Restarting frontend with PM2 ......"
-            pm2 delete careconnect-frontend || true
-            pm2 serve dist 3000 --name careconnect-frontend --spa
+            echo "Copying new build..."
+            sudo cp -r /home/ubuntu/frontend-temp/* /usr/share/nginx/html/
 
-            pm2 save
+            echo "Fixing permissions..."
+            sudo chown -R www-data:www-data /usr/share/nginx/html
 
-            echo "Deployment completed 🚀"
+            echo "Reloading Nginx..."
+            sudo systemctl restart nginx   # use restart not reload
+
+            echo "Cleanup temp files..."
+            rm -rf /home/ubuntu/frontend-temp
+
+            echo " Deployment completed 🚀"
