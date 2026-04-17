@@ -55,7 +55,7 @@ export function useSendMessage(appointmentId) {
         }
         return {
           ...old,
-          items: [...(old?.items ?? []), optimistic],
+          items: [optimistic, ...(old?.items ?? [])],
         }
       })
 

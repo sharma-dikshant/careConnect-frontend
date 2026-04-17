@@ -107,7 +107,10 @@ export function ChatContainer({ messages = [], isLoading, viewerRole }) {
   const grouped = []
   let lastDay = null
 
-  for (const msg of messages) {
+  // Reverse to render oldest at top and newest at bottom
+  const displayMessages = [...messages].reverse()
+
+  for (const msg of displayMessages) {
     const day = getDayLabel(msg.created_at)
     if (day !== lastDay) {
       grouped.push({ type: 'divider', day })
