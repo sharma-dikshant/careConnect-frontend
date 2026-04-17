@@ -40,11 +40,11 @@ export function PatientAppointmentsPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Appointments</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">My Appointments</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           {currentQuery.isLoading
             ? 'Loading…'
-            : `${isActiveTab ? activeAppointments.length : inactiveAppointments.length} ${isActiveTab ? 'active' : 'past'} appointments`}
+            : `${isActiveTab ? activeAppointments.length : inactiveAppointments.length} ${isActiveTab ? 'active' : 'past'} appointment${(isActiveTab ? activeAppointments.length : inactiveAppointments.length) === 1 ? '' : 's'}`}
         </p>
       </div>
 

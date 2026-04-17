@@ -96,30 +96,47 @@ export function Sidebar({ isOpen, onClose }) {
         )}
       >
         {/* Navigation links */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-thin px-3 py-5">
           {navItems.map(({ label, to, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               onClick={onClose}
+              end
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )
               }
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
+              {({ isActive }) => (
+                <>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full transition-all",
+                      isActive ? "bg-primary" : "bg-transparent",
+                    )}
+                  />
+                  <Icon
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0 transition-colors",
+                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-accent-foreground",
+                    )}
+                  />
+                  <span className="truncate">{label}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
         <div className="border-t border-border px-4 py-3">
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} CareConnect
           </p>
         </div>

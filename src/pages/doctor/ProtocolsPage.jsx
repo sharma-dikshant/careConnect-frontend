@@ -96,16 +96,16 @@ export function DoctorProtocolsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Care Protocols</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">Care Protocols</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             {isLoading
               ? "Loading…"
               : `${total} global protocol${total !== 1 ? "s" : ""} in your library`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -113,13 +113,14 @@ export function DoctorProtocolsPage() {
             aria-label="Refresh"
           >
             <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={openAiModal}
             id="ai-patient-guide-btn-protocol"
-            className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
+            className="border-primary/30 text-primary hover:bg-primary/5"
           >
             <Sparkles className="h-4 w-4" />
             <span className="hidden sm:inline">Generate Patient Guide</span>
@@ -127,17 +128,17 @@ export function DoctorProtocolsPage() {
           </Button>
           <Button size="sm" onClick={openModal} id="upload-protocol-btn">
             <Upload className="h-4 w-4" />
-            Upload PDF
+            <span className="hidden sm:inline">Upload PDF</span>
+            <span className="sm:hidden">Upload</span>
           </Button>
         </div>
       </div>
 
       {/* Info callout */}
-      <div className="rounded-xl bg-brand-blue-50 border border-brand-blue-200 px-4 py-3 text-sm text-brand-blue-800">
-        <strong>Global protocols</strong> are your personal PDF library. They
-        are automatically visible to patients in every appointment you create.
-        Upload appointment-specific PDFs from within an appointment's detail
-        page.
+      <div className="rounded-xl border border-brand-blue-200 bg-brand-blue-50 px-4 py-3 text-sm leading-relaxed text-brand-blue-800">
+        <strong>Global protocols</strong> are your personal PDF library. They are automatically
+        visible to patients in every appointment you create. Upload
+        appointment-specific PDFs from within an appointment's detail page.
       </div>
 
       {/* Error */}

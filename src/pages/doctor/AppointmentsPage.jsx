@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from "react";
-import { Plus, RefreshCw, Sparkles } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import {
   useAppointments,
   useInitiateCreateAppointment,
@@ -249,17 +249,17 @@ export function DoctorAppointmentsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Appointments</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">Appointments</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             {currentQuery.isLoading
               ? "Loading…"
-              : `${isActiveTab ? activeAppointments.length : inactiveAppointments.length} ${isActiveTab ? "active" : "past"} appointments`}
+              : `${isActiveTab ? activeAppointments.length : inactiveAppointments.length} ${isActiveTab ? "active" : "past"} appointment${(isActiveTab ? activeAppointments.length : inactiveAppointments.length) === 1 ? "" : "s"}`}
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -276,7 +276,8 @@ export function DoctorAppointmentsPage() {
             id="create-appointment-btn"
           >
             <Plus className="h-4 w-4" />
-            New Appointment
+            <span className="hidden sm:inline">New Appointment</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
       </div>

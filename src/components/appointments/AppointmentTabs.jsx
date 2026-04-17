@@ -33,7 +33,7 @@ export const AppointmentTabs = memo(function AppointmentTabs({
     <div
       role="tablist"
       aria-label="Appointment filter tabs"
-      className="flex items-center gap-1 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto scrollbar-none"
+      className="scrollbar-none flex items-center gap-1 overflow-x-auto rounded-xl border border-border/60 bg-muted/60 p-1"
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id
@@ -46,21 +46,19 @@ export const AppointmentTabs = memo(function AppointmentTabs({
             aria-controls={`tabpanel-${tab.id}`}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'relative flex-1 min-w-[110px] flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
+              'relative flex min-w-[110px] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
               isActive
-                ? 'bg-white text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/80',
+                ? 'bg-white text-foreground shadow-sm ring-1 ring-border/40'
+                : 'text-muted-foreground hover:bg-white/60 hover:text-foreground',
             )}
           >
-            {/* Full label on md+, short label on mobile */}
             <span className="hidden sm:inline">{tab.label}</span>
             <span className="sm:hidden">{tab.shortLabel}</span>
 
-            {/* Count badge */}
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none min-w-[1.2rem] transition-colors',
+                  'inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-none transition-colors',
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted-foreground/15 text-muted-foreground',
@@ -68,11 +66,6 @@ export const AppointmentTabs = memo(function AppointmentTabs({
               >
                 {tab.count}
               </span>
-            )}
-
-            {/* Active indicator line */}
-            {isActive && (
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 rounded-full bg-primary opacity-0" />
             )}
           </button>
         )

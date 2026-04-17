@@ -38,23 +38,26 @@ export const AppointmentCard = memo(function AppointmentCard({
   const showActions = isActive && (canEdit || canDelete)
 
   return (
-    <Card className="hover:shadow-md transition-shadow group">
-      <CardContent className="p-4 space-y-3">
+    <Card className="group flex flex-col transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+      <CardContent className="flex flex-1 flex-col gap-3 p-5">
         {/* Title row */}
         <div className="flex items-start justify-between gap-2">
           <Link
             to={detailRoute}
-            className="font-semibold text-sm group-hover:text-primary transition-colors leading-snug"
+            className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary"
           >
             {apt.title}
           </Link>
-          <Badge variant={isActive ? (role === 'doctor' ? 'doctor' : 'patient') : 'inactive'} className="shrink-0">
+          <Badge
+            variant={isActive ? (role === 'doctor' ? 'doctor' : 'patient') : 'inactive'}
+            className="shrink-0"
+          >
             {isActive ? 'Active' : 'Past'}
           </Badge>
         </div>
 
         {/* Meta rows */}
-        <div className="space-y-1.5">
+        <div className="flex-1 space-y-1.5">
           {/* Patient info (doctor view) */}
           {role === 'doctor' && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -83,8 +86,8 @@ export const AppointmentCard = memo(function AppointmentCard({
 
           {apt.description && (
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
-              <AlignLeft className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-              <span className="line-clamp-2">{apt.description}</span>
+              <AlignLeft className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span className="line-clamp-2 leading-relaxed">{apt.description}</span>
             </div>
           )}
 
@@ -95,12 +98,13 @@ export const AppointmentCard = memo(function AppointmentCard({
         </div>
 
         {/* Action row */}
-        <div className="flex items-center justify-between pt-1 border-t border-border/60">
+        <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
           <Link
             to={detailRoute}
-            className="text-xs text-primary font-medium hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
           >
-            View messages →
+            View messages
+            <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
 
           {showActions && (
@@ -120,7 +124,7 @@ export const AppointmentCard = memo(function AppointmentCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => onDelete(apt.id)}
                   disabled={isDeleting}
                   aria-label={`Delete appointment: ${apt.title}`}
