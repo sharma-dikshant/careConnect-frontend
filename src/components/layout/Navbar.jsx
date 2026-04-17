@@ -31,7 +31,7 @@ export function Navbar({ onMenuToggle, isSidebarOpen }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center border-b border-border bg-white/95 backdrop-blur-sm px-4 gap-3 shadow-sm">
+    <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border bg-white/98 px-4 gap-3 shadow-sm">
       {/* Hamburger — mobile only */}
       <Button
         variant="ghost"
