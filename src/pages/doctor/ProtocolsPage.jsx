@@ -54,22 +54,6 @@ export function DoctorProtocolsPage() {
   const [deletingId, setDeletingId] = useState(null);
   const [page] = useState(1);
 
-  // AI Patient Guide modal state
-  const [aiModalOpen, setAiModalOpen] = useState(false);
-  const openAiModal = useCallback(() => setAiModalOpen(true), []);
-  const closeAiModal = useCallback(() => setAiModalOpen(false), []);
-  const handleSavePatientGuideAsProtocol = useCallback(
-    (patientGuide) => {
-      // TODO: wire to backend PDF/protocol save endpoint when ready
-      console.info(
-        "[CareConnect] Patient guide saved as protocol:",
-        patientGuide,
-      );
-      closeAiModal();
-    },
-    [closeAiModal],
-  );
-
   const { data, isLoading, error, refetch } = useGlobalProtocols({
     page,
     limit: 20,
@@ -77,6 +61,18 @@ export function DoctorProtocolsPage() {
   const { mutateAsync: upload, isPending: isUploading } =
     useUploadGlobalProtocol();
   const { mutateAsync: remove } = useDeleteCareProtocol();
+
+  // AI Patient Guide modal state
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const openAiModal = useCallback(() => setAiModalOpen(true), []);
+  const closeAiModal = useCallback(() => setAiModalOpen(false), []);
+  const handleSavePatientGuideAsProtocol = useCallback(
+    async (blob, filename) => {
+      const file = new File([blob], filename, { type: 'application/pdf' })
+      await upload(file)
+    },
+    [upload],
+  );
 
   const protocols = data?.items ?? [];
   const total = data?.meta?.total ?? 0;

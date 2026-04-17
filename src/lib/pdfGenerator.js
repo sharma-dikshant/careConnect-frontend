@@ -45,6 +45,10 @@ export async function generatePDF(elementRef, filename = 'patient-guide.pdf', op
     await worker.save()
   }
 
-  const blob = await worker.outputPdf('blob')
+  // Get the underlying jsPDF instance directly — html2pdf's outputPdf()
+  // wrapper can return non-standard blobs that break S3 uploads.
+  const pdf = await worker.toPdf().get('pdf')
+  const arrayBuffer = pdf.output('arraybuffer')
+  const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
   return { blob, filename }
 }
