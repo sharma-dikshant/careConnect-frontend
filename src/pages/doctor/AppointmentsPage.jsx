@@ -269,17 +269,7 @@ export function DoctorAppointmentsPage() {
             <RefreshCw className="h-4 w-4" />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={openAiModal}
-            id="ai-patient-guide-btn-appointment"
-            className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">Generate Patient Guide</span>
-            <span className="sm:hidden">AI Guide</span>
-          </Button>
+
           <Button
             size="sm"
             onClick={openCreateModal}

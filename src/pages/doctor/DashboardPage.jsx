@@ -1,18 +1,20 @@
-import { CalendarDays, Users, Clock, TrendingUp } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
-import { useAppointments } from '@/hooks/useAppointments'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { formatDateTime } from '@/lib/utils'
-import { ROUTES } from '@/lib/constants'
-import { Link } from 'react-router-dom'
+import { CalendarDays, Users, Clock, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppointments } from "@/hooks/useAppointments";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { formatDateTime } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants";
+import { Link } from "react-router-dom";
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6 flex items-center gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${color}`}>
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-xl ${color}`}
+        >
           <Icon className="h-6 w-6" />
         </div>
         <div>
@@ -21,21 +23,21 @@ function StatCard({ icon: Icon, label, value, color }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function DoctorDashboardPage() {
-  const { user } = useAuth()
-  const { data, isLoading } = useAppointments({ page: 1, limit: 5 })
-  const appointments = data?.items ?? []
-  const total = data?.meta?.total ?? 0
+  const { user } = useAuth();
+  const { data, isLoading } = useAppointments({ page: 1, limit: 5 });
+  const appointments = data?.items ?? [];
+  const total = data?.meta?.total ?? 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Good morning, {user?.name ?? 'Doctor'} 👋
+          Good morning, {user?.name ?? "Doctor"} 👋
         </h1>
         <p className="text-muted-foreground mt-1">
           Here's what's happening with your patients today.
@@ -47,7 +49,7 @@ export function DoctorDashboardPage() {
         <StatCard
           icon={CalendarDays}
           label="Total Appointments"
-          value={isLoading ? '—' : total}
+          value={isLoading ? "—" : total}
           color="bg-brand-blue-100 text-brand-blue-600"
         />
         <StatCard
@@ -108,7 +110,9 @@ export function DoctorDashboardPage() {
                       {apt.patient?.name} · {formatDateTime(apt.created_at)}
                     </p>
                   </div>
-                  <Badge variant="doctor" className="shrink-0">Active</Badge>
+                  <Badge variant="doctor" className="shrink-0">
+                    Active
+                  </Badge>
                 </Link>
               ))}
             </div>
@@ -116,5 +120,5 @@ export function DoctorDashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
