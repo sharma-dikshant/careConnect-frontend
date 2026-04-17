@@ -163,7 +163,7 @@ export function AI_PatientGuide_Modal({
   return (
     <ModalPortal>
       <div
-        className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="ai-modal-title"
@@ -175,52 +175,50 @@ export function AI_PatientGuide_Modal({
           aria-hidden="true"
         />
 
-        {/* Panel */}
+        {/* Panel — full-screen on mobile, centered card on sm+ */}
         <div
           ref={containerRef}
           className={cn(
-            "relative z-10 w-full max-w-[1100px] rounded-2xl bg-background shadow-2xl",
+            "relative z-10 w-full bg-background shadow-2xl",
             "flex flex-col animate-fade-in",
-            "h-[90vh]",
+            // Mobile: full height, top-rounded sheet
+            "h-[100dvh] rounded-t-2xl",
+            // sm+: centered card
+            "sm:h-[90vh] sm:max-w-[1100px] sm:rounded-2xl",
           )}
-          style={{ width: "min(95vw, 1100px)" }}
         >
           {/* ── Header ─────────────────────────────────────────────────────── */}
-          <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-blue-700 shadow-sm">
-                <Sparkles className="h-4.5 w-4.5 text-white" />
-              </div>
-              <div>
-                <h2 id="ai-modal-title" className="text-base font-bold">
-                  ✨ AI Patient Guide Generator
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {isAppointment ? "Appointment context" : "Protocol context"} —
-                  powered by CareConnect AI
-                </p>
-              </div>
+          <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-border shrink-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-blue-700 shadow-sm">
+              <Sparkles className="h-4 w-4 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 id="ai-modal-title" className="text-sm sm:text-base font-bold truncate">
+                AI Patient Guide Generator
+              </h2>
+              <p className="text-xs text-muted-foreground hidden sm:block">
+                {isAppointment ? "Appointment context" : "Protocol context"} —
+                powered by CareConnect AI
+              </p>
             </div>
 
-            {/* Context badge */}
-            <div className="hidden sm:flex items-center gap-2">
-              <span
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium",
-                  isAppointment
-                    ? "bg-brand-blue-50 text-brand-blue-700 border border-brand-blue-200"
-                    : "bg-accent text-accent-foreground border border-accent",
-                )}
-              >
-                {isAppointment ? "📋 Appointment" : "📚 Protocol"}
-              </span>
-            </div>
+            {/* Context badge — md+ only */}
+            <span
+              className={cn(
+                "hidden md:inline-flex rounded-full px-3 py-1 text-xs font-medium shrink-0",
+                isAppointment
+                  ? "bg-brand-blue-50 text-brand-blue-700 border border-brand-blue-200"
+                  : "bg-accent text-accent-foreground border border-accent",
+              )}
+            >
+              {isAppointment ? "📋 Appointment" : "📚 Protocol"}
+            </span>
 
             <button
               type="button"
               onClick={handleClose}
               disabled={isLoading || isSaving}
-              className="ml-auto rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
+              className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
               aria-label="Close AI patient guide modal"
             >
               <X className="h-4 w-4" />
@@ -232,9 +230,9 @@ export function AI_PatientGuide_Modal({
             {/* Left panel — prompt */}
             <div
               className={cn(
-                "flex flex-col gap-4 p-5 md:p-6 border-b md:border-b-0 md:border-r border-border",
+                "flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 md:p-6 border-b md:border-b-0 md:border-r border-border",
                 "md:w-[38%] shrink-0",
-                "max-h-[40vh] md:max-h-none overflow-y-auto scrollbar-thin",
+                "max-h-[35vh] md:max-h-none overflow-y-auto scrollbar-thin",
               )}
             >
               <PromptInput
@@ -247,7 +245,7 @@ export function AI_PatientGuide_Modal({
             </div>
 
             {/* Right panel — result */}
-            <div className="flex-1 p-5 md:p-6 overflow-y-auto scrollbar-thin min-h-[260px] md:min-h-0">
+            <div className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto scrollbar-thin min-h-0">
               <AIResponseView
                 isLoading={isLoading}
                 error={error}
@@ -262,107 +260,89 @@ export function AI_PatientGuide_Modal({
           </div>
 
           {/* ── Footer ─────────────────────────────────────────────────────── */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-border bg-muted/30 rounded-b-2xl">
-            {/* Left side: regenerate + edit/preview toggle + copy */}
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4 border-t border-border bg-muted/30 sm:rounded-b-2xl shrink-0">
+            {/* Left side: regenerate + edit/preview + copy (icon-only on mobile) */}
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={regenerate}
                 disabled={isLoading || !prompt.trim() || isSaving}
-                className="gap-2"
+                className="gap-1.5"
                 id="ai-regenerate-btn"
               >
                 {isLoading ? (
-                  <>
-                    <Spinner className="h-3.5 w-3.5" /> Generating…
-                  </>
+                  <Spinner className="h-3.5 w-3.5" />
                 ) : (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5" /> Regenerate
-                  </>
+                  <RefreshCw className="h-3.5 w-3.5" />
                 )}
+                <span className="hidden sm:inline">
+                  {isLoading ? "Generating…" : "Regenerate"}
+                </span>
               </Button>
 
-              {/* Edit / Preview toggle */}
               {hasMarkdown && !isLoading && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsEditMode(!isEditMode)}
                   disabled={isSaving}
-                  className="gap-2"
+                  className="gap-1.5"
                   id="ai-edit-toggle-btn"
                 >
                   {isEditMode ? (
-                    <>
-                      <Eye className="h-3.5 w-3.5" /> Preview
-                    </>
+                    <Eye className="h-3.5 w-3.5" />
                   ) : (
-                    <>
-                      <Edit2 className="h-3.5 w-3.5" /> Edit
-                    </>
+                    <Edit2 className="h-3.5 w-3.5" />
                   )}
+                  <span className="hidden sm:inline">
+                    {isEditMode ? "Preview" : "Edit"}
+                  </span>
                 </Button>
               )}
 
-              {/* Copy to clipboard */}
               {hasMarkdown && !isLoading && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleCopy}
                   disabled={isSaving}
-                  className="gap-2"
+                  className="gap-1.5"
                   id="ai-copy-btn"
                 >
                   {copied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-green-600" />
-                      <span className="text-green-600">Copied!</span>
-                    </>
+                    <Check className="h-3.5 w-3.5 text-green-600" />
                   ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" /> Copy
-                    </>
+                    <Copy className="h-3.5 w-3.5" />
                   )}
+                  <span className="hidden sm:inline">
+                    {copied ? <span className="text-green-600">Copied!</span> : "Copy"}
+                  </span>
                 </Button>
               )}
             </div>
 
-            {/* Right side: cancel + download + primary CTA */}
-            <div className="flex gap-2 ml-auto">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClose}
-                disabled={isLoading || isSaving}
-                id="ai-cancel-btn"
-              >
-                Cancel
-              </Button>
-
-              {/* Download PDF */}
+            {/* Right side: download + primary CTA */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {hasMarkdown && !isLoading && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDownload}
                   disabled={isSaving}
-                  className="gap-2"
+                  className="gap-1.5"
                   id="ai-download-btn"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Download PDF
+                  <span className="hidden sm:inline">Download</span>
                 </Button>
               )}
 
-              {/* Primary CTA */}
               <Button
                 size="sm"
                 onClick={handlePrimaryAction}
                 disabled={!hasMarkdown || isLoading || isSaving}
-                className="gap-2"
+                className="gap-1.5"
                 id={
                   isAppointment
                     ? "ai-attach-appointment-btn"
@@ -371,17 +351,18 @@ export function AI_PatientGuide_Modal({
               >
                 {isSaving ? (
                   <>
-                    <Spinner className="h-3.5 w-3.5" /> Saving…
+                    <Spinner className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Saving…</span>
                   </>
                 ) : isAppointment ? (
                   <>
-                    <Paperclip className="h-4 w-4" />
-                    Attach to Appointment
+                    <Paperclip className="h-3.5 w-3.5" />
+                    <span className="hidden xs:inline">Attach</span>
                   </>
                 ) : (
                   <>
-                    <BookMarked className="h-4 w-4" />
-                    Save as Protocol
+                    <BookMarked className="h-3.5 w-3.5" />
+                    <span className="hidden xs:inline">Save</span>
                   </>
                 )}
               </Button>
