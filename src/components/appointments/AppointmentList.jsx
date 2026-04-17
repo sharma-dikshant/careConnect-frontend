@@ -11,10 +11,10 @@ import { ROUTES } from '@/lib/constants'
 // ─── Skeleton loaders ─────────────────────────────────────────────────────────
 function TableRowSkeleton() {
   return (
-    <tr className="border-b border-border">
-      {[5, 3, 2, 2, 1].map((w, i) => (
-        <td key={i} className="px-4 py-3">
-          <Skeleton className={`h-4 w-${w * 8} rounded`} />
+    <tr className="border-b border-border/60">
+      {[40, 24, 16, 16, 12].map((w, i) => (
+        <td key={i} className="px-4 py-4">
+          <Skeleton className="h-4 rounded" style={{ width: `${w * 4}px` }} />
         </td>
       ))}
     </tr>
@@ -29,7 +29,7 @@ function CardSkeleton() {
 function EmptyState({ isActive, onCreateClick }) {
   const isDoctor = typeof onCreateClick === 'function'
   return (
-    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border bg-white px-6 py-16 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
         <svg
           className="h-8 w-8 text-muted-foreground"
@@ -45,11 +45,11 @@ function EmptyState({ isActive, onCreateClick }) {
           />
         </svg>
       </div>
-      <div>
+      <div className="max-w-sm">
         <p className="font-semibold text-foreground">
           {isActive ? 'No active appointments' : 'No past appointments'}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="mt-1 text-sm text-muted-foreground">
           {isActive
             ? isDoctor
               ? 'Create your first appointment to get started.'
@@ -81,17 +81,17 @@ export const AppointmentTable = memo(function AppointmentTable({
   const showActions = isActive && (onEdit || onDelete)
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-white">
+    <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
       <table className="w-full text-sm" aria-label="Appointments table">
         <thead>
-          <tr className="border-b border-border bg-muted/40">
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Title</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Patient</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Description</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Created</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Status</th>
+          <tr className="border-b border-border bg-muted/50">
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Title</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Patient</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Created</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
             {showActions && (
-              <th className="px-4 py-3 text-right font-semibold text-muted-foreground">Actions</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
             )}
           </tr>
         </thead>
@@ -99,10 +99,10 @@ export const AppointmentTable = memo(function AppointmentTable({
           {appointments.map((apt) => (
             <tr
               key={apt.id}
-              className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors group"
+              className="group border-b border-border/60 transition-colors last:border-0 hover:bg-muted/30"
             >
               {/* Title */}
-              <td className="px-4 py-3 max-w-[200px]">
+              <td className="max-w-[200px] px-4 py-3.5">
                 <Link
                   to={ROUTES.DOCTOR_APPOINTMENT_DETAIL(apt.id)}
                   className="font-medium text-foreground hover:text-primary transition-colors truncate block"
@@ -112,29 +112,29 @@ export const AppointmentTable = memo(function AppointmentTable({
               </td>
 
               {/* Patient */}
-              <td className="px-4 py-3">
+              <td className="px-4 py-3.5">
                 <div>
                   <p className="font-medium text-foreground">{apt.patient?.name ?? '—'}</p>
                   {apt.patient?.email && (
-                    <p className="text-xs text-muted-foreground">{apt.patient.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">{apt.patient.email}</p>
                   )}
                 </div>
               </td>
 
               {/* Description */}
-              <td className="px-4 py-3 max-w-[220px]">
-                <p className="text-muted-foreground text-xs line-clamp-2">
+              <td className="max-w-[220px] px-4 py-3.5">
+                <p className="line-clamp-2 text-xs text-muted-foreground">
                   {apt.description || <span className="italic opacity-50">No description</span>}
                 </p>
               </td>
 
               {/* Created */}
-              <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-xs">
+              <td className="whitespace-nowrap px-4 py-3.5 text-xs text-muted-foreground">
                 {formatDateTime(apt.created_at)}
               </td>
 
               {/* Status */}
-              <td className="px-4 py-3">
+              <td className="px-4 py-3.5">
                 <Badge variant={isActive ? 'doctor' : 'inactive'}>
                   {isActive ? 'Active' : 'Past'}
                 </Badge>
@@ -142,8 +142,8 @@ export const AppointmentTable = memo(function AppointmentTable({
 
               {/* Actions — only for active tab, doctor only */}
               {showActions && (
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     {onEdit && (
                       <Button
                         variant="ghost"
@@ -188,7 +188,7 @@ const AppointmentCardGrid = memo(function AppointmentCardGrid({
   isDeletingId,
 }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-4">
       {appointments.map((apt) => (
         <AppointmentCard
           key={apt.id}
@@ -240,13 +240,13 @@ export const AppointmentList = memo(function AppointmentList({
       <>
         {/* Desktop skeleton (doctor only) */}
         {isDoctor && (
-          <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-white">
+          <div className="hidden overflow-x-auto rounded-xl border border-border bg-white shadow-sm md:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/40">
+                <tr className="border-b border-border bg-muted/50">
                   {['Title', 'Patient', 'Description', 'Created', 'Status', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left">
-                      <Skeleton className="h-4 w-20 rounded" />
+                      <Skeleton className="h-3 w-20 rounded" />
                     </th>
                   ))}
                 </tr>
@@ -260,7 +260,7 @@ export const AppointmentList = memo(function AppointmentList({
           </div>
         )}
         {/* Mobile / patient card skeleton */}
-        <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${isDoctor ? 'md:hidden' : ''}`}>
+        <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-4 ${isDoctor ? 'md:hidden' : ''}`}>
           {[...Array(4)].map((_, i) => (
             <CardSkeleton key={i} />
           ))}

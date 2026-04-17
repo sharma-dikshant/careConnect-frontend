@@ -32,7 +32,7 @@ export function AppShell() {
 
         {/* Main content area */}
         <main className="flex-1 overflow-y-auto scrollbar-thin">
-          <div className="container max-w-7xl mx-auto px-4 py-6 animate-page-in">
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 animate-page-in">
             <Outlet />
           </div>
         </main>

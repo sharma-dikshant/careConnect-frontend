@@ -31,12 +31,12 @@ export function Navbar({ onMenuToggle, isSidebarOpen }) {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border bg-white/98 px-4 gap-3 shadow-sm">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-3 border-b border-border bg-white/85 px-4 backdrop-blur-md sm:px-6 lg:px-8">
       {/* Hamburger — mobile only */}
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden shrink-0"
+        className="-ml-2 shrink-0 lg:hidden"
         onClick={onMenuToggle}
         aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
       >
@@ -46,41 +46,46 @@ export function Navbar({ onMenuToggle, isSidebarOpen }) {
       {/* Logo */}
       <Link
         to="/"
-        className="flex items-center gap-2 font-bold text-primary text-lg select-none"
+        className="flex items-center gap-2.5 font-bold text-primary text-lg select-none"
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-          <HeartPulse className="h-4 w-4" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
+          <HeartPulse className="h-[18px] w-[18px]" />
         </div>
-        <span className="hidden sm:inline">CareConnect</span>
+        <span className="hidden tracking-tight sm:inline">CareConnect</span>
       </Link>
 
       {/* Spacer */}
       <div className="flex-1" />
 
       {/* Right section */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" aria-label="Notifications">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Notifications"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Bell className="h-5 w-5" />
         </Button>
 
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
         {/* User info */}
         {user && (
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex flex-col items-end leading-tight">
-              <span className="text-sm font-semibold text-foreground truncate max-w-[140px]">
+          <div className="flex items-center gap-2.5">
+            <div className="hidden flex-col items-end leading-tight sm:flex">
+              <span className="max-w-[160px] truncate text-sm font-semibold text-foreground">
                 {user.name}
               </span>
               {role && (
-                <Badge variant={role} className="text-[10px] px-1.5 py-0">
+                <Badge variant={role} className="mt-0.5 px-1.5 py-0 text-[10px]">
                   {capitalize(role)}
                 </Badge>
               )}
             </div>
 
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-9 w-9 ring-2 ring-border">
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
           </div>
@@ -93,9 +98,9 @@ export function Navbar({ onMenuToggle, isSidebarOpen }) {
           onClick={handleLogout}
           disabled={isLoggingOut}
           aria-label="Logout"
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-[18px] w-[18px]" />
         </Button>
       </div>
     </header>

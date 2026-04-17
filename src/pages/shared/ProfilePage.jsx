@@ -63,21 +63,23 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Manage your personal information</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">Profile</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Manage your personal information
+        </p>
       </div>
 
       {/* Avatar card */}
       <Card>
-        <CardContent className="flex items-center gap-5 pt-6">
-          <Avatar className="h-16 w-16 text-xl">
+        <CardContent className="flex flex-col items-start gap-5 p-6 sm:flex-row sm:items-center">
+          <Avatar className="h-16 w-16 text-xl ring-2 ring-border">
             <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-semibold text-lg">{user?.name}</p>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-lg font-semibold">{user?.name}</p>
+            <p className="truncate text-sm text-muted-foreground">{user?.email}</p>
             {role && (
               <Badge variant={role} className="mt-1">
                 {capitalize(role)}
