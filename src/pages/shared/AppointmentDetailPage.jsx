@@ -78,10 +78,17 @@ export function AppointmentDetailPage() {
 
   const [panelTab, setPanelTab] = useState("protocols");
 
-  const { data, isLoading, refetch } = useMessages(id, { limit: 100 });
+  const { data, isLoading, refetch, fetchNextPage, hasMore, isFetchingMore, addOptimisticMessage, removeOptimisticMessage } = useMessages(id, { limit: 20 });
   const messages = data?.items ?? [];
 
-  const { mutate: send, isPending: isSending } = useSendMessage(id);
+  const { mutate: send, isPending: isSending } = useSendMessage(id, {
+    onMutate: ({ message }) => addOptimisticMessage(message),
+    onError: (optId) => removeOptimisticMessage(optId),
+    onSettled: async (optId) => {
+      await refetch();
+      if (optId) removeOptimisticMessage(optId);
+    },
+  });
 
   const handleSend = useCallback(
     (text) => {
@@ -200,6 +207,9 @@ export function AppointmentDetailPage() {
           messages={messages}
           isLoading={isLoading}
           viewerRole={role}
+          onLoadMore={fetchNextPage}
+          hasMore={hasMore}
+          isFetchingMore={isFetchingMore}
         />
       </div>
 

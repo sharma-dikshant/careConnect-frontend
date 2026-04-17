@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useLayoutEffect } from 'react'
 import { Bot } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -71,13 +71,58 @@ function getDayLabel(isoString) {
  *  - isLoading: boolean
  *  - viewerRole: 'doctor' | 'patient'
  */
-export function ChatContainer({ messages = [], isLoading, viewerRole }) {
+export function ChatContainer({
+  messages = [],
+  isLoading,
+  viewerRole,
+  onLoadMore,
+  hasMore,
+  isFetchingMore,
+}) {
   const bottomRef = useRef(null)
+  const scrollAreaRef = useRef(null)
+  
+  // Ref to retain scroll position when loading older messages
+  const previousScrollPosition = useRef({ scrollHeight: 0, scrollTop: 0 })
+  const prevMessagesLength = useRef(messages?.length || 0)
+  
+  // Ref to track if user has manually scrolled up reading history
+  const isScrolledNearBottom = useRef(true)
 
-  // Scroll to bottom whenever messages change
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    
+    // User is near the bottom if within 100px
+    isScrolledNearBottom.current = scrollHeight - scrollTop - clientHeight < 100
+    
+    // Reached top -> load older messages
+    if (scrollTop === 0 && hasMore && !isFetchingMore && onLoadMore) {
+       previousScrollPosition.current = { scrollHeight, scrollTop }
+       onLoadMore()
+    }
+  }
+
+  useLayoutEffect(() => {
+    if (!scrollAreaRef.current) return
+
+    const addedAtTop = 
+      messages.length > prevMessagesLength.current && 
+      previousScrollPosition.current.scrollHeight > 0
+
+    if (addedAtTop) {
+      // Adjust scroll to maintain position after prepending items
+      const newScrollHeight = scrollAreaRef.current.scrollHeight
+      const diff = newScrollHeight - previousScrollPosition.current.scrollHeight
+      scrollAreaRef.current.scrollTop = previousScrollPosition.current.scrollTop + diff
+      previousScrollPosition.current = { scrollHeight: 0, scrollTop: 0 } // reset
+    } else if (isScrolledNearBottom.current && messages.length !== prevMessagesLength.current) {
+      // Only auto-scroll if the new messages were added at the bottom AND user wasn't scrolled up
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    prevMessagesLength.current = messages.length
   }, [messages])
+
 
   if (isLoading) {
     return (
@@ -107,10 +152,7 @@ export function ChatContainer({ messages = [], isLoading, viewerRole }) {
   const grouped = []
   let lastDay = null
 
-  // Reverse to render oldest at top and newest at bottom
-  const displayMessages = [...messages].reverse()
-
-  for (const msg of displayMessages) {
+  for (const msg of messages) {
     const day = getDayLabel(msg.created_at)
     if (day !== lastDay) {
       grouped.push({ type: 'divider', day })
@@ -120,7 +162,24 @@ export function ChatContainer({ messages = [], isLoading, viewerRole }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 space-y-2">
+    <div 
+      ref={scrollAreaRef}
+      onScroll={handleScroll}
+      className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 space-y-2"
+    >
+      {hasMore && (
+        <div className="py-2 text-center text-xs text-muted-foreground flex items-center justify-center">
+          {isFetchingMore ? (
+             <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                Loading older messages...
+             </span>
+          ) : (
+             <span>Scroll up to load more</span>
+          )}
+        </div>
+      )}
+
       {grouped.map((item, idx) =>
         item.type === 'divider' ? (
           <DateDivider key={`d-${idx}`} date={item.day} />
