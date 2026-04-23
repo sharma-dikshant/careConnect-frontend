@@ -17,9 +17,7 @@ import api from '@/api/axiosInstance'
 export async function uploadGlobalProtocol(file) {
   const formData = new FormData()
   formData.append('file', file)
-  const { data } = await api.post('/api/care-protocols', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const { data } = await api.post('/api/care-protocols', formData)
   return data
 }
 
@@ -66,7 +64,6 @@ export async function uploadAppointmentProtocol(appointmentId, file) {
   const { data } = await api.post(
     `/api/care-protocols/locals/${appointmentId}`,
     formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
   )
   return data
 }
